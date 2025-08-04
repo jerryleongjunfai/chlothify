@@ -36,6 +36,8 @@ CREATE TABLE IF NOT EXISTS OrderTable (
 );
 """)
 
+print("edit made by liz")
+print("liz made this edit")
 cursor.execute("""
 CREATE TABLE IF NOT EXISTS OrderItems (
     OrderItemID TEXT PRIMARY KEY,
