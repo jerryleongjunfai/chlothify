@@ -4,7 +4,7 @@ import tkinter as tk
 # Create the main window
 root = tk.Tk()
 root.title("Clothify GUI")
-root.geometry("900x600")  # width x height
+root.geometry("300x200")  # width x height
 
 # Add a label
 label = tk.Label(root, text="Welcome to Clothify!")
