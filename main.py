@@ -40,14 +40,15 @@ class ClothifyGUI:
             
             # Products table (only if not exists)
             if 'Product' not in existing_tables:
+                self.cursor.execute("DROP TABLE IF EXISTS Product")
                 self.cursor.execute('''
                     CREATE TABLE Product (
                         ProductID TEXT PRIMARY KEY,
                         ProductName TEXT NOT NULL,
-                        Category TEXT NOT NULL,
                         Price REAL NOT NULL,
-                        StockQuantity INTEGER NOT NULL,
-                        Description TEXT
+                        Category TEXT NOT NULL,
+                        Size TEXT NOT NULL,
+                        StockQty INTEGER NOT NULL
                     )
                 ''')
             

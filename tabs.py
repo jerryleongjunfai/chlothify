@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 
+from functions import add_product, update_product, delete_product, search_product, view_products  #functions from product tab
+
 def create_customer_tab(self):
         """Create customer management tab"""
         customer_frame = ttk.Frame(self.notebook)
@@ -47,23 +49,36 @@ def create_product_tab(self):
         # Buttons frame
         btn_frame = tk.Frame(product_frame)
         btn_frame.pack(pady=10)
+
+        self.product_entries = {}  
+        fields = ['ProductID', 'ProductName', 'Price', 'Category', 'Size', 'StockQty']  
+
+        for i, field in enumerate(fields): 
+                lbl = tk.Label(product_frame, text=field + ":") 
+                lbl.pack()  
+                entry = tk.Entry(product_frame)  
+                entry.pack()  
+                self.product_entries[field] = entry  
         
-        tk.Button(btn_frame, text="View All Products", command=self,
+        tk.Button(btn_frame, text="View All Products", command=lambda: view_products(self),
                  bg='#4CAF50', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-        tk.Button(btn_frame, text="Add Product", command=self,
+        tk.Button(btn_frame, text="Add Product", command=lambda: add_product(self),
                  bg='#2196F3', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-        tk.Button(btn_frame, text="Update Stock", command=self,
+        tk.Button(btn_frame, text="Update Stock", command=lambda: update_product(self),
                  bg='#FF9800', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+        tk.Button(btn_frame, text="Delete Product", command=lambda: delete_product(self),
+              bg='#f44336', fg='white', font=('Arial', 10, 'bold')).pack(side='left', padx=5)  
+        tk.Button(btn_frame, text="Search Product", command=lambda: search_product(self),
+              bg='#9C27B0', fg='white', font=('Arial', 10, 'bold')).pack(side='left', padx=5)  
         
         # Treeview for displaying products
-        self.product_tree = ttk.Treeview(product_frame, columns=('ID', 'Name', 'Category', 'Price', 'Stock', 'Description'), show='headings')
-        self.product_tree.heading('ID', text='Product ID')
-        self.product_tree.heading('Name', text='Product Name')
+        self.product_tree = ttk.Treeview(product_frame, columns=('ProductID', 'ProductName', 'ProductPrice', 'Category', 'Size', 'StockQty'), show='headings')
+        self.product_tree.heading('ProductID', text='Product ID')
+        self.product_tree.heading('ProductName', text='Product Name')
+        self.product_tree.heading('ProductPrice', text='Price ($)')
         self.product_tree.heading('Category', text='Category')
-        self.product_tree.heading('Price', text='Price ($)')
-        self.product_tree.heading('Stock', text='Stock')
-        self.product_tree.heading('Description', text='Description')
-        
+        self.product_tree.heading('Size', text='Size')
+        self.product_tree.heading('StockQty', text='StockQty')
         self.product_tree.pack(fill='both', expand=True, padx=10, pady=10)
 
 def create_order_tab(self):
