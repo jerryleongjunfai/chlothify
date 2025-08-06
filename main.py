@@ -1,6 +1,7 @@
 import sqlite3
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, ttk
+import tabs as tabs
 
 class ClothifyGUI:
     def __init__(self, root):
@@ -102,6 +103,21 @@ class ClothifyGUI:
         title_label = tk.Label(self.root, text="Clothify Store Management System", 
                               font=('Arial', 16, 'bold'), bg='#f0f0f0', fg='#333')
         title_label.pack(pady=10)
+
+        # Create notebook for tabs
+        self.notebook = ttk.Notebook(self.root)
+        self.notebook.pack(fill='both', expand=True, padx=10, pady=10)
+        
+        # Create tabs
+        tabs.create_customer_tab(self)
+        tabs.create_product_tab(self)
+        tabs.create_order_tab(self)
+        tabs.create_payment_tab(self)
+
+def __del__(self):
+        """Close database connection when the object is destroyed"""
+        if hasattr(self, 'conn'):
+            self.conn.close()
 
 
 # Main execution
