@@ -1,5 +1,8 @@
 from tkinter import messagebox
 
+
+
+# ---------------PRODUCT MANAGEMENT------------------
 # Add a new product
 def add_product(app):
     try:
@@ -26,7 +29,7 @@ def update_product(app):
         values = get_product_entry_values(app)
         app.cursor.execute("""
             UPDATE Product
-            SET ProductName = ?, Category = ?, Price = ?, Size = ?, StockQty = ?
+            SET ProductName = ?, Price = ?, Category = ?, Size = ?, StockQty = ?
             WHERE ProductID = ?
         """, (values[1], values[2], values[3], values[4], values[5], values[0]))
         if app.cursor.rowcount == 0:
@@ -98,8 +101,8 @@ def get_product_entry_values(app):
     return [
         app.product_entries['ProductID'].get(),
         app.product_entries['ProductName'].get(),
-        app.product_entries['Category'].get(),
         float(app.product_entries['Price'].get()),
+        app.product_entries['Category'].get(),
         app.product_entries['Size'].get(),
         int(app.product_entries['StockQty'].get())
     ]
