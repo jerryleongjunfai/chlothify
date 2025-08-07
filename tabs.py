@@ -51,7 +51,7 @@ def create_product_tab(self):
         btn_frame.pack(pady=10)
 
         self.product_entries = {}  
-        fields = ['ProductID', 'ProductName', 'Price', 'Category', 'Size', 'StockQty']  
+        fields = ['ProductID', 'ProductName', 'ProductPrice', 'Category', 'Size', 'StockQty']  
 
         for i, field in enumerate(fields): 
                 lbl = tk.Label(product_frame, text=field + ":") 

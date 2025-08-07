@@ -45,7 +45,7 @@ class ClothifyGUI:
                     CREATE TABLE Product (
                         ProductID TEXT PRIMARY KEY,
                         ProductName TEXT NOT NULL,
-                        Price REAL NOT NULL,
+                        ProductPrice REAL NOT NULL,
                         Category TEXT NOT NULL,
                         Size TEXT NOT NULL,
                         StockQty INTEGER NOT NULL

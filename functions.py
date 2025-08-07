@@ -29,7 +29,7 @@ def update_product(app):
         values = get_product_entry_values(app)
         app.cursor.execute("""
             UPDATE Product
-            SET ProductName = ?, Price = ?, Category = ?, Size = ?, StockQty = ?
+            SET ProductName = ?, ProductPrice = ?, Category = ?, Size = ?, StockQty = ?
             WHERE ProductID = ?
         """, (values[1], values[2], values[3], values[4], values[5], values[0]))
         if app.cursor.rowcount == 0:
@@ -101,14 +101,14 @@ def get_product_entry_values(app):
     return [
         app.product_entries['ProductID'].get(),
         app.product_entries['ProductName'].get(),
-        float(app.product_entries['Price'].get()),
+        float(app.product_entries['ProductPrice'].get()),
         app.product_entries['Category'].get(),
         app.product_entries['Size'].get(),
         int(app.product_entries['StockQty'].get())
     ]
 
 def fill_product_entries(app, row):
-    keys = ['ProductID', 'ProductName', 'Price', 'Category', 'Size', 'StockQty']
+    keys = ['ProductID', 'ProductName', 'ProductPrice', 'Category', 'Size', 'StockQty']
     for i, key in enumerate(keys):
         app.product_entries[key].delete(0, 'end')
         app.product_entries[key].insert(0, row[i])
