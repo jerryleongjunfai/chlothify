@@ -1,8 +1,28 @@
 from tkinter import messagebox
 
+#------------------------------AUTHENTICATION---------------------------------------------
+USER_SESSIONS = {"current_user": None}
 
+def validate_credentials(username, password):
+    # username: password
+    valid_admins = {
+        "admin": "clothify123",
+        "employee": "clothify123"
+    }
+    return valid_admins.get(username) == password
 
-# ---------------PRODUCT MANAGEMENT------------------
+def admin_login(username, password):
+    """Login function that also sets session (optional)"""
+    if validate_credentials(username, password):
+        USER_SESSIONS["current_user"] = username
+        return True
+    return False
+
+def logout_user():
+    """Clears the current session"""
+    USER_SESSIONS["current_user"] = None
+
+#-------------------------------------------PRODUCT MANAGEMENT---------------------------------
 # Add a new product
 def add_product(app):
     try:
@@ -95,7 +115,10 @@ def view_products(app):
     except Exception as e:
         messagebox.showerror("Error", f"Failed to retrieve products: {e}")
 
-
+#Clear all data in entries :D
+def clear_product_entries(app):
+    for entry in app.product_entries.values():
+        entry.delete(0, 'end')
 # Helpers
 def get_product_entry_values(app):
     return [

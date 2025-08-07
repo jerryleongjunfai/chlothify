@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
-from functions import add_product, update_product, delete_product, search_product, view_products  #functions from product tab
+from functions import add_product, update_product, delete_product, search_product, view_products#functions from function.py
 
 def create_customer_tab(self):
         """Create customer management tab"""
@@ -69,7 +69,10 @@ def create_product_tab(self):
         tk.Button(btn_frame, text="Delete Product", command=lambda: delete_product(self),
               bg='#f44336', fg='white', font=('Arial', 10, 'bold')).pack(side='left', padx=5)  
         tk.Button(btn_frame, text="Search Product", command=lambda: search_product(self),
-              bg='#9C27B0', fg='white', font=('Arial', 10, 'bold')).pack(side='left', padx=5)  
+              bg='#9C27B0', fg='white', font=('Arial', 10, 'bold')).pack(side='left', padx=5) 
+        tk.Button(btn_frame, text="Clear Fields", command=lambda: clear_product_entries(self),
+             bg='#9E9E9E', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+        
         
         # Treeview for displaying products
         self.product_tree = ttk.Treeview(product_frame, columns=('ProductID', 'ProductName', 'ProductPrice', 'Category', 'Size', 'StockQty'), show='headings')
@@ -129,6 +132,9 @@ def create_payment_tab(self):
         self.payment_tree.heading('Amount', text='Amount')
         self.payment_tree.heading('Method', text='Method')
         self.payment_tree.heading('Status', text='Status')
-        
         self.payment_tree.pack(fill='both', expand=True, padx=10, pady=10)
 
+#Helpers
+def clear_product_entries(app):
+    for entry in app.product_entries.values():
+        entry.delete(0, 'end')
