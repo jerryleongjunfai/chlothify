@@ -9,7 +9,7 @@ class ClothifyGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("Clothify Store Management System")
-        self.root.geometry("2000x14000")
+        self.root.geometry("1500x700")
         self.root.configure(bg='#f0f0f0')
         
         # Initialize database connection
@@ -112,6 +112,8 @@ class ClothifyGUI:
         title_label = tk.Label(self.root, text="Clothify Store Management System", 
                               font=('Arial', 16, 'bold'), bg='#f0f0f0', fg='#333')
         title_label.pack(pady=10)
+
+        input = input("Enter your name: ")
 
         # Create notebook for tabs
         self.notebook = ttk.Notebook(self.root)
