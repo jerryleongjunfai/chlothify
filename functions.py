@@ -1,4 +1,5 @@
 from tkinter import messagebox
+import sqlite3
 
 #------------------------------AUTHENTICATION---------------------------------------------
 USER_SESSIONS = {"current_user": None}
