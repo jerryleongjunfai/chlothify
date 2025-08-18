@@ -116,9 +116,21 @@ class ClothifyGUI:
         top_frame = tk.Frame(self.root, bg="#f0f0f0")
         top_frame.pack(fill='x')
 
-        logout_btn = tk.Button(top_frame, text="Logout", command=self.logout, font=('Arial', 12),
-                               bg="#e74c3c", fg="white")
-        logout_btn.pack(side="right", padx=10, pady=10)
+        logout_btn_gradient = tk.Button(
+            top_frame, text="Logout", 
+            command=self.logout, 
+            font=('Arial', 12, 'bold'), 
+            bg="#c0392b",  # Darker red
+            fg="black",
+            activebackground="#a93226",  # Darker when clicked
+            activeforeground="white",
+            relief="flat",
+            bd=0,
+            padx=25,
+            pady=10,
+            cursor="hand2"
+        )
+        logout_btn_gradient.pack(side="right", padx=10, pady=10)
 
         # Title
         title_label = tk.Label(self.root, text="Clothify Store Management System", 
@@ -134,6 +146,7 @@ class ClothifyGUI:
         tabs.create_product_tab(self)
         tabs.create_order_tab(self)
         tabs.create_payment_tab(self)
+        tabs.create_sql_tab(self)
 
     def logout(self):
         functions.logout_user()
@@ -322,7 +335,7 @@ def show_login_window():
     footer_frame = tk.Frame(main_container, bg="#f5f5f5")
     footer_frame.pack(side='bottom', pady=(40, 0))
     
-    footer_label = tk.Label(footer_frame, text="© 2024 Clothify Store Management", 
+    footer_label = tk.Label(footer_frame, text="© 2025 Clothify Store Management", 
                            font=('Segoe UI', 9), 
                            bg="#f5f5f5", fg="#999999")
     footer_label.pack()

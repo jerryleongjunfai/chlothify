@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-
+import functions as func
 # Import placeholder functions - you'll need to implement these
 # from functions import add_product, update_product, delete_product, search_product, view_products
 
@@ -14,13 +14,17 @@ def create_customer_tab(app):  # Changed from self to app
     btn_frame.pack(pady=10)
     
     # Fixed button commands - using lambda functions with placeholder functions
-    tk.Button(btn_frame, text="View All Customers", command=lambda: view_all_customers(app),
-             bg='#4CAF50', fg='white', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-    tk.Button(btn_frame, text="Add Customer", command=lambda: add_customer(app),
-             bg='#2196F3', fg='white', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-    tk.Button(btn_frame, text="Search Customer", command=lambda: search_customer(app),
-             bg='#FF9800', fg='white', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-    
+    tk.Button(btn_frame, text="View All Customers", command=lambda: func.view_customers(app),
+             bg='#4CAF50', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Add Customer", command=lambda: func.add_customer(app),
+             bg='#2196F3', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Search Customer", command=lambda: func.search_customer(app),
+             bg='#FF9800', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Update Customer", command=lambda: func.update_customer(app),
+             bg='#FF9800', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Delete Customer", command=lambda: func.delete_customer(app),
+             bg='#FF9800', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+
     # Treeview for displaying customers
     app.customer_tree = ttk.Treeview(customer_frame, columns=('ID', 'Name', 'Email', 'Phone', 'Address'), show='headings')
     app.customer_tree.heading('ID', text='Customer ID')
@@ -72,17 +76,17 @@ def create_product_tab(app):  # Changed from self to app
     btn_frame = tk.Frame(product_frame)
     btn_frame.pack(pady=10)
     
-    tk.Button(btn_frame, text="View All Products", command=lambda: view_products(app),
-             bg='#4CAF50', fg='white', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-    tk.Button(btn_frame, text="Add Product", command=lambda: add_product(app),
-             bg='#2196F3', fg='white', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-    tk.Button(btn_frame, text="Update Stock", command=lambda: update_product(app),
-             bg='#FF9800', fg='white', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-    tk.Button(btn_frame, text="Delete Product", command=lambda: delete_product(app),
-          bg='#f44336', fg='white', font=('Arial', 10, 'bold')).pack(side='left', padx=5)  
-    tk.Button(btn_frame, text="Search Product", command=lambda: search_product(app),
-          bg='#9C27B0', fg='white', font=('Arial', 10, 'bold')).pack(side='left', padx=5) 
-    tk.Button(btn_frame, text="Clear Fields", command=lambda: clear_product_entries(app),
+    tk.Button(btn_frame, text="View All Products", command=lambda: func.view_products(app),
+             bg='#4CAF50', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Add Product", command=lambda: func.add_product(app),
+             bg='#2196F3', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Update Stock", command=lambda: func.update_product(app),
+             bg='#FF9800', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Delete Product", command=lambda: func.delete_product(app),
+          bg='#f44336', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Search Product", command=lambda: func.search_product(app),
+          bg='#9C27B0', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Clear Fields", command=lambda: func.clear_product_entries(app),
          bg='#9E9E9E', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
     
     # Treeview for displaying products
@@ -113,13 +117,13 @@ def create_order_tab(app):  # Changed from self to app
     btn_frame = tk.Frame(order_frame)
     btn_frame.pack(pady=10)
     
-    tk.Button(btn_frame, text="View All Orders", command=lambda: view_all_orders(app),
-             bg='#4CAF50', fg='white', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-    tk.Button(btn_frame, text="Create Order", command=lambda: create_order(app),
-             bg='#2196F3', fg='white', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-    tk.Button(btn_frame, text="Update Order Status", command=lambda: update_order_status(app),
-             bg='#FF9800', fg='white', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-    
+    tk.Button(btn_frame, text="View All Orders", command=lambda: func.view_all_orders(app),
+             bg='#4CAF50', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Create Order", command=lambda: func.create_order(app),
+             bg='#2196F3', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Update Order Status", command=lambda: func.update_order_status(app),
+             bg='#FF9800', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+
     # Treeview for displaying orders
     app.order_tree = ttk.Treeview(order_frame, columns=('OrderID', 'CustomerID', 'Date', 'Amount', 'Status'), show='headings')
     app.order_tree.heading('OrderID', text='Order ID')
@@ -146,11 +150,11 @@ def create_payment_tab(app):  # Changed from self to app
     btn_frame = tk.Frame(payment_frame)
     btn_frame.pack(pady=10)
     
-    tk.Button(btn_frame, text="View All Payments", command=lambda: view_all_payments(app),
-             bg='#4CAF50', fg='white', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-    tk.Button(btn_frame, text="Process Payment", command=lambda: process_payment(app),
-             bg='#2196F3', fg='white', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-    
+    tk.Button(btn_frame, text="View All Payments", command=lambda: func.view_all_payments(app),
+             bg='#4CAF50', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Process Payment", command=lambda: func.process_payment(app),
+             bg='#2196F3', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+
     # Treeview for displaying payments
     app.payment_tree = ttk.Treeview(payment_frame, columns=('PaymentID', 'OrderID', 'Date', 'Amount', 'Method', 'Status'), show='headings')
     app.payment_tree.heading('PaymentID', text='Payment ID')
@@ -170,61 +174,29 @@ def create_payment_tab(app):  # Changed from self to app
     
     app.payment_tree.pack(fill='both', expand=True, padx=10, pady=10)
 
-# Helper functions
-def clear_product_entries(app):
-    """Clear all product entry fields"""
-    for entry in app.product_entries.values():
-        entry.delete(0, 'end')
+def create_sql_tab(app):
+        """Create SQL query execution tab"""
+        sql_frame = ttk.Frame(app.notebook)
+        app.notebook.add(sql_frame, text="SQL Queries")
 
-# Placeholder functions - implement these in your functions.py file
-def view_products(app):
-    """Placeholder for viewing all products"""
-    print("View all products - implement this function")
+        # SQL input area
+        tk.Label(sql_frame, text="Enter SQL Query:", font=('Arial', 12, 'bold')).pack(pady=10)
 
-def add_product(app):
-    """Placeholder for adding a product"""
-    print("Add product - implement this function")
+        app.sql_text = tk.Text(sql_frame, height=8, width=80, font=('Consolas', 10))
+        app.sql_text.pack(padx=10, pady=5)
+        
+        # Buttons
+        btn_frame = tk.Frame(sql_frame)
+        btn_frame.pack(pady=10)
 
-def update_product(app):
-    """Placeholder for updating a product"""
-    print("Update product - implement this function")
+        tk.Button(btn_frame, text="Execute Query", command=lambda: func.execute_sql_query(app),
+                 bg='#4CAF50', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+        tk.Button(btn_frame, text="Clear", command=lambda: app.sql_text.delete('1.0', tk.END),
+                 bg='#f44336', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+        
+        # Results area
+        tk.Label(sql_frame, text="Query Results:", font=('Arial', 12, 'bold')).pack(pady=(20, 5))
 
-def delete_product(app):
-    """Placeholder for deleting a product"""
-    print("Delete product - implement this function")
+        app.result_tree = ttk.Treeview(sql_frame, show='headings')
+        app.result_tree.pack(fill='both', expand=True, padx=10, pady=5)
 
-def search_product(app):
-    """Placeholder for searching a product"""
-    print("Search product - implement this function")
-
-def view_all_customers(app):
-    """Placeholder for viewing all customers"""
-    print("View all customers - implement this function")
-
-def add_customer(app):
-    """Placeholder for adding a customer"""
-    print("Add customer - implement this function")
-
-def search_customer(app):
-    """Placeholder for searching a customer"""
-    print("Search customer - implement this function")
-
-def view_all_orders(app):
-    """Placeholder for viewing all orders"""
-    print("View all orders - implement this function")
-
-def create_order(app):
-    """Placeholder for creating an order"""
-    print("Create order - implement this function")
-
-def update_order_status(app):
-    """Placeholder for updating order status"""
-    print("Update order status - implement this function")
-
-def view_all_payments(app):
-    """Placeholder for viewing all payments"""
-    print("View all payments - implement this function")
-
-def process_payment(app):
-    """Placeholder for processing a payment"""
-    print("Process payment - implement this function")
