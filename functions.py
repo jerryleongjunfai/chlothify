@@ -211,3 +211,138 @@ def filter_orders_by_status(self, status):
 def filter_products_by_category(self, category):
     self.cursor.execute("SELECT * FROM Product WHERE Category = ?", (category,))
     return self.cursor.fetchall()
+
+def generate_sales_report(self, start_date=None, end_date=None):
+    """Generate a sales report with optional date range filtering"""
+    try:
+        query = """
+            SELECT 
+                o.OrderID,
+                o.OrderDate,
+                o.TotalAmount,
+                o.Status,
+                c.Name AS CustomerName,
+                COUNT(oi.OrderItemID) AS ItemsCount
+            FROM 
+                OrderTable o
+            JOIN 
+                Customer c ON o.CustomerID = c.CustomerID
+            LEFT JOIN 
+                OrderItems oi ON o.OrderID = oi.OrderID
+        """
+        
+        params = []
+        if start_date and end_date:
+            query += " WHERE o.OrderDate BETWEEN ? AND ?"
+            params.extend([start_date, end_date])
+        elif start_date:
+            query += " WHERE o.OrderDate >= ?"
+            params.append(start_date)
+        elif end_date:
+            query += " WHERE o.OrderDate <= ?"
+            params.append(end_date)
+            
+        query += " GROUP BY o.OrderID ORDER BY o.OrderDate DESC"
+        
+        self.cursor.execute(query, params)
+        return self.cursor.fetchall()
+        
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to generate sales report: {e}")
+        return []
+
+def generate_customer_report(self):
+    """Generate a report of customer purchasing activity"""
+    try:
+        self.cursor.execute("""
+            SELECT 
+                c.CustomerID,
+                c.Name,
+                c.Email,
+                c.Phone,
+                COUNT(o.OrderID) AS TotalOrders,
+                SUM(o.TotalAmount) AS TotalSpent,
+                MAX(o.OrderDate) AS LastOrderDate
+            FROM 
+                Customer c
+            LEFT JOIN 
+                OrderTable o ON c.CustomerID = o.CustomerID
+            GROUP BY 
+                c.CustomerID
+            ORDER BY 
+                TotalSpent DESC
+        """)
+        return self.cursor.fetchall()
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to generate customer report: {e}")
+        return []
+
+def top_selling_products(self, limit=10, days=None):
+    """Get top selling products with optional time period filtering"""
+    try:
+        query = """
+            SELECT 
+                p.ProductID,
+                p.ProductName,
+                p.Category,
+                SUM(oi.Quantity) AS TotalSold,
+                SUM(oi.Quantity * oi.UnitPrice) AS TotalRevenue
+            FROM 
+                OrderItems oi
+            JOIN 
+                Product p ON oi.ProductID = p.ProductID
+            JOIN 
+                OrderTable o ON oi.OrderID = o.OrderID
+        """
+        
+        params = []
+        if days:
+            query += " WHERE o.OrderDate >= date('now', ?)"
+            params.append(f"-{days} days")
+            
+        query += """
+            GROUP BY 
+                p.ProductID
+            ORDER BY 
+                TotalSold DESC
+            LIMIT ?
+        """
+        params.append(limit)
+        
+        self.cursor.execute(query, params)
+        return self.cursor.fetchall()
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to get top selling products: {e}")
+        return []
+
+def monthly_revenue_chart(self, months=12):
+    """Generate monthly revenue data for charting"""
+    try:
+        self.cursor.execute("""
+            SELECT 
+                strftime('%Y-%m', OrderDate) AS Month,
+                SUM(TotalAmount) AS Revenue
+            FROM 
+                OrderTable
+            WHERE 
+                OrderDate >= date('now', 'start of month', ?)
+                AND Status = 'Completed'
+            GROUP BY 
+                strftime('%Y-%m', OrderDate)
+            ORDER BY 
+                Month
+        """, (f"-{months-1} months",))
+        
+        results = self.cursor.fetchall()
+        
+        # Format results for charting
+        months = []
+        revenues = []
+        for row in results:
+            months.append(row[0])
+            revenues.append(row[1])
+            
+        return months, revenues
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to generate revenue chart data: {e}")
+        return [], []
