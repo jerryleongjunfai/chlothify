@@ -1,140 +1,202 @@
 import tkinter as tk
 from tkinter import ttk
+import functions as func
+# Import placeholder functions - you'll need to implement these
+# from functions import add_product, update_product, delete_product, search_product, view_products
 
-from functions import add_product, update_product, delete_product, search_product, view_products#functions from function.py
+def create_customer_tab(app):  # Changed from self to app
+    """Create customer management tab"""
+    customer_frame = ttk.Frame(app.notebook)
+    app.notebook.add(customer_frame, text="Customers")
+    
+    # Buttons frame
+    btn_frame = tk.Frame(customer_frame)
+    btn_frame.pack(pady=10)
+    
+    # Fixed button commands - using lambda functions with placeholder functions
+    tk.Button(btn_frame, text="View All Customers", command=lambda: func.view_customers(app),
+             bg='#4CAF50', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Add Customer", command=lambda: func.add_customer(app),
+             bg='#2196F3', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Search Customer", command=lambda: func.search_customer(app),
+             bg='#FF9800', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Update Customer", command=lambda: func.update_customer(app),
+             bg='#FF9800', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Delete Customer", command=lambda: func.delete_customer(app),
+             bg='#FF9800', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
 
-def create_customer_tab(self):
-        """Create customer management tab"""
-        customer_frame = ttk.Frame(self.notebook)
-        self.notebook.add(customer_frame, text="Customers")
+    # Treeview for displaying customers
+    app.customer_tree = ttk.Treeview(customer_frame, columns=('ID', 'Name', 'Email', 'Phone', 'Address'), show='headings')
+    app.customer_tree.heading('ID', text='Customer ID')
+    app.customer_tree.heading('Name', text='Name')
+    app.customer_tree.heading('Email', text='Email')
+    app.customer_tree.heading('Phone', text='Phone')
+    app.customer_tree.heading('Address', text='Address')
+    
+    # Set column widths
+    app.customer_tree.column('ID', width=80)
+    app.customer_tree.column('Name', width=150)
+    app.customer_tree.column('Email', width=200)
+    app.customer_tree.column('Phone', width=120)
+    app.customer_tree.column('Address', width=150)
+    
+    app.customer_tree.pack(fill='both', expand=True, padx=10, pady=10)
+    
+    # Scrollbar for customer tree
+    customer_scrollbar = ttk.Scrollbar(customer_frame, orient='vertical', command=app.customer_tree.yview)
+    app.customer_tree.configure(yscrollcommand=customer_scrollbar.set)
+    customer_scrollbar.pack(side='right', fill='y')
+
+def create_product_tab(app):  # Changed from self to app
+    """Create product management tab"""
+    product_frame = ttk.Frame(app.notebook)
+    app.notebook.add(product_frame, text="Products")
+    
+    # Create input fields frame
+    input_frame = tk.Frame(product_frame)
+    input_frame.pack(pady=10, fill='x')
+    
+    app.product_entries = {}  
+    fields = ['ProductID', 'ProductName', 'ProductPrice', 'Category', 'Size', 'StockQty']  
+
+    # Create a grid layout for input fields
+    for i, field in enumerate(fields): 
+        row = i // 3  # 3 fields per row
+        col = (i % 3) * 2  # Each field takes 2 columns (label + entry)
         
-        # Buttons frame
-        btn_frame = tk.Frame(customer_frame)
+        lbl = tk.Label(input_frame, text=field + ":", font=('Arial', 10))
+        lbl.grid(row=row, column=col, padx=5, pady=5, sticky='e')
+        
+        entry = tk.Entry(input_frame, font=('Arial', 10))
+        entry.grid(row=row, column=col+1, padx=5, pady=5, sticky='w')
+        
+        app.product_entries[field] = entry  
+    
+    # Buttons frame
+    btn_frame = tk.Frame(product_frame)
+    btn_frame.pack(pady=10)
+    
+    tk.Button(btn_frame, text="View All Products", command=lambda: func.view_products(app),
+             bg='#4CAF50', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Add Product", command=lambda: func.add_product(app),
+             bg='#2196F3', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Update Stock", command=lambda: func.update_product(app),
+             bg='#FF9800', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Delete Product", command=lambda: func.delete_product(app),
+          bg='#f44336', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Search Product", command=lambda: func.search_product(app),
+          bg='#9C27B0', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Clear Fields", command=lambda: func.clear_product_entries(app),
+         bg='#9E9E9E', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    
+    # Treeview for displaying products
+    app.product_tree = ttk.Treeview(product_frame, columns=('ProductID', 'ProductName', 'ProductPrice', 'Category', 'Size', 'StockQty'), show='headings')
+    app.product_tree.heading('ProductID', text='Product ID')
+    app.product_tree.heading('ProductName', text='Product Name')
+    app.product_tree.heading('ProductPrice', text='Price ($)')
+    app.product_tree.heading('Category', text='Category')
+    app.product_tree.heading('Size', text='Size')
+    app.product_tree.heading('StockQty', text='Stock Qty')
+    
+    # Set column widths
+    app.product_tree.column('ProductID', width=100)
+    app.product_tree.column('ProductName', width=150)
+    app.product_tree.column('ProductPrice', width=80)
+    app.product_tree.column('Category', width=100)
+    app.product_tree.column('Size', width=80)
+    app.product_tree.column('StockQty', width=80)
+    
+    app.product_tree.pack(fill='both', expand=True, padx=10, pady=10)
+
+def create_order_tab(app):  # Changed from self to app
+    """Create order management tab"""
+    order_frame = ttk.Frame(app.notebook)
+    app.notebook.add(order_frame, text="Orders")
+    
+    # Buttons frame
+    btn_frame = tk.Frame(order_frame)
+    btn_frame.pack(pady=10)
+    
+    tk.Button(btn_frame, text="View All Orders", command=lambda: func.view_all_orders(app),
+             bg='#4CAF50', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Create Order", command=lambda: func.create_order(app),
+             bg='#2196F3', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Update Order Status", command=lambda: func.update_order_status(app),
+             bg='#FF9800', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+
+    # Treeview for displaying orders
+    app.order_tree = ttk.Treeview(order_frame, columns=('OrderID', 'CustomerID', 'Date', 'Amount', 'Status'), show='headings')
+    app.order_tree.heading('OrderID', text='Order ID')
+    app.order_tree.heading('CustomerID', text='Customer ID')
+    app.order_tree.heading('Date', text='Order Date')
+    app.order_tree.heading('Amount', text='Total Amount')
+    app.order_tree.heading('Status', text='Status')
+    
+    # Set column widths
+    app.order_tree.column('OrderID', width=100)
+    app.order_tree.column('CustomerID', width=100)
+    app.order_tree.column('Date', width=120)
+    app.order_tree.column('Amount', width=100)
+    app.order_tree.column('Status', width=100)
+    
+    app.order_tree.pack(fill='both', expand=True, padx=10, pady=10)
+
+def create_payment_tab(app):  # Changed from self to app
+    """Create payment management tab"""
+    payment_frame = ttk.Frame(app.notebook)
+    app.notebook.add(payment_frame, text="Payments")
+    
+    # Buttons frame
+    btn_frame = tk.Frame(payment_frame)
+    btn_frame.pack(pady=10)
+    
+    tk.Button(btn_frame, text="View All Payments", command=lambda: func.view_all_payments(app),
+             bg='#4CAF50', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Process Payment", command=lambda: func.process_payment(app),
+             bg='#2196F3', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+
+    # Treeview for displaying payments
+    app.payment_tree = ttk.Treeview(payment_frame, columns=('PaymentID', 'OrderID', 'Date', 'Amount', 'Method', 'Status'), show='headings')
+    app.payment_tree.heading('PaymentID', text='Payment ID')
+    app.payment_tree.heading('OrderID', text='Order ID')
+    app.payment_tree.heading('Date', text='Payment Date')
+    app.payment_tree.heading('Amount', text='Amount')
+    app.payment_tree.heading('Method', text='Method')
+    app.payment_tree.heading('Status', text='Status')
+    
+    # Set column widths
+    app.payment_tree.column('PaymentID', width=100)
+    app.payment_tree.column('OrderID', width=100)
+    app.payment_tree.column('Date', width=120)
+    app.payment_tree.column('Amount', width=100)
+    app.payment_tree.column('Method', width=100)
+    app.payment_tree.column('Status', width=100)
+    
+    app.payment_tree.pack(fill='both', expand=True, padx=10, pady=10)
+
+def create_sql_tab(app):
+        """Create SQL query execution tab"""
+        sql_frame = ttk.Frame(app.notebook)
+        app.notebook.add(sql_frame, text="SQL Queries")
+
+        # SQL input area
+        tk.Label(sql_frame, text="Enter SQL Query:", font=('Arial', 12, 'bold')).pack(pady=10)
+
+        app.sql_text = tk.Text(sql_frame, height=8, width=80, font=('Consolas', 10))
+        app.sql_text.pack(padx=10, pady=5)
+        
+        # Buttons
+        btn_frame = tk.Frame(sql_frame)
         btn_frame.pack(pady=10)
-        
-        tk.Button(btn_frame, text="View All Customers", command=self,
+
+        tk.Button(btn_frame, text="Execute Query", command=lambda: func.execute_sql_query(app),
                  bg='#4CAF50', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-        tk.Button(btn_frame, text="Add Customer", command=self,
-                 bg='#2196F3', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-        tk.Button(btn_frame, text="Search Customer", command=self,
-                 bg='#FF9800', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+        tk.Button(btn_frame, text="Clear", command=lambda: app.sql_text.delete('1.0', tk.END),
+                 bg='#f44336', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
         
-        # Treeview for displaying customers
-        self.customer_tree = ttk.Treeview(customer_frame, columns=('ID', 'Name', 'Email', 'Phone', 'Address'), show='headings')
-        self.customer_tree.heading('ID', text='Customer ID')
-        self.customer_tree.heading('Name', text='Name')
-        self.customer_tree.heading('Email', text='Email')
-        self.customer_tree.heading('Phone', text='Phone')
-        self.customer_tree.heading('Address', text='Address')
-        
-        # Set column widths
-        self.customer_tree.column('ID', width=80)
-        self.customer_tree.column('Name', width=150)
-        self.customer_tree.column('Email', width=200)
-        self.customer_tree.column('Phone', width=120)
-        self.customer_tree.column('Address', width=150)
-        
-        self.customer_tree.pack(fill='both', expand=True, padx=10, pady=10)
-        
-        # Scrollbar for customer tree
-        customer_scrollbar = ttk.Scrollbar(customer_frame, orient='vertical', command=self.customer_tree.yview)
-        self.customer_tree.configure(yscrollcommand=customer_scrollbar.set)
-        customer_scrollbar.pack(side='right', fill='y')
+        # Results area
+        tk.Label(sql_frame, text="Query Results:", font=('Arial', 12, 'bold')).pack(pady=(20, 5))
 
-def create_product_tab(self):
-        """Create product management tab"""
-        product_frame = ttk.Frame(self.notebook)
-        self.notebook.add(product_frame, text="Products")
-        
-        # Buttons frame
-        btn_frame = tk.Frame(product_frame)
-        btn_frame.pack(pady=10)
+        app.result_tree = ttk.Treeview(sql_frame, show='headings')
+        app.result_tree.pack(fill='both', expand=True, padx=10, pady=5)
 
-        self.product_entries = {}  
-        fields = ['ProductID', 'ProductName', 'ProductPrice', 'Category', 'Size', 'StockQty']  
-
-        for i, field in enumerate(fields): 
-                lbl = tk.Label(product_frame, text=field + ":") 
-                lbl.pack()  
-                entry = tk.Entry(product_frame)  
-                entry.pack()  
-                self.product_entries[field] = entry  
-        
-        tk.Button(btn_frame, text="View All Products", command=lambda: view_products(self),
-                 bg='#4CAF50', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-        tk.Button(btn_frame, text="Add Product", command=lambda: add_product(self),
-                 bg='#2196F3', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-        tk.Button(btn_frame, text="Update Stock", command=lambda: update_product(self),
-                 bg='#FF9800', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-        tk.Button(btn_frame, text="Delete Product", command=lambda: delete_product(self),
-              bg='#f44336', fg='white', font=('Arial', 10, 'bold')).pack(side='left', padx=5)  
-        tk.Button(btn_frame, text="Search Product", command=lambda: search_product(self),
-              bg='#9C27B0', fg='white', font=('Arial', 10, 'bold')).pack(side='left', padx=5) 
-        tk.Button(btn_frame, text="Clear Fields", command=lambda: clear_product_entries(self),
-             bg='#9E9E9E', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-        
-        
-        # Treeview for displaying products
-        self.product_tree = ttk.Treeview(product_frame, columns=('ProductID', 'ProductName', 'ProductPrice', 'Category', 'Size', 'StockQty'), show='headings')
-        self.product_tree.heading('ProductID', text='Product ID')
-        self.product_tree.heading('ProductName', text='Product Name')
-        self.product_tree.heading('ProductPrice', text='Price ($)')
-        self.product_tree.heading('Category', text='Category')
-        self.product_tree.heading('Size', text='Size')
-        self.product_tree.heading('StockQty', text='StockQty')
-        self.product_tree.pack(fill='both', expand=True, padx=10, pady=10)
-
-def create_order_tab(self):
-        """Create order management tab"""
-        order_frame = ttk.Frame(self.notebook)
-        self.notebook.add(order_frame, text="Orders")
-        
-        # Buttons frame
-        btn_frame = tk.Frame(order_frame)
-        btn_frame.pack(pady=10)
-        
-        tk.Button(btn_frame, text="View All Orders", command=self,
-                 bg='#4CAF50', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-        tk.Button(btn_frame, text="Create Order", command=self,
-                 bg='#2196F3', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-        tk.Button(btn_frame, text="Update Order Status", command=self,
-                 bg='#FF9800', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-        
-        # Treeview for displaying orders
-        self.order_tree = ttk.Treeview(order_frame, columns=('OrderID', 'CustomerID', 'Date', 'Amount', 'Status'), show='headings')
-        self.order_tree.heading('OrderID', text='Order ID')
-        self.order_tree.heading('CustomerID', text='Customer ID')
-        self.order_tree.heading('Date', text='Order Date')
-        self.order_tree.heading('Amount', text='Total Amount')
-        self.order_tree.heading('Status', text='Status')
-        
-        self.order_tree.pack(fill='both', expand=True, padx=10, pady=10)
-
-def create_payment_tab(self):
-        """Create payment management tab"""
-        payment_frame = ttk.Frame(self.notebook)
-        self.notebook.add(payment_frame, text="Payments")
-        
-        # Buttons frame
-        btn_frame = tk.Frame(payment_frame)
-        btn_frame.pack(pady=10)
-        
-        tk.Button(btn_frame, text="View All Payments", command=self,
-                 bg='#4CAF50', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-        tk.Button(btn_frame, text="Process Payment", command=self,
-                 bg='#2196F3', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-        
-        # Treeview for displaying payments
-        self.payment_tree = ttk.Treeview(payment_frame, columns=('PaymentID', 'OrderID', 'Date', 'Amount', 'Method', 'Status'), show='headings')
-        self.payment_tree.heading('PaymentID', text='Payment ID')
-        self.payment_tree.heading('OrderID', text='Order ID')
-        self.payment_tree.heading('Date', text='Payment Date')
-        self.payment_tree.heading('Amount', text='Amount')
-        self.payment_tree.heading('Method', text='Method')
-        self.payment_tree.heading('Status', text='Status')
-        self.payment_tree.pack(fill='both', expand=True, padx=10, pady=10)
-
-#Helpers
-def clear_product_entries(app):
-    for entry in app.product_entries.values():
-        entry.delete(0, 'end')

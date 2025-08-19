@@ -1,5 +1,12 @@
-from tkinter import messagebox
+from tkinter import messagebox, simpledialog
 import sqlite3
+import tkinter as tk
+
+# Helper functions
+def clear_product_entries(app):
+    """Clear all product entry fields"""
+    for entry in app.product_entries.values():
+        entry.delete(0, 'end')
 
 #------------------------------AUTHENTICATION---------------------------------------------
 USER_SESSIONS = {"current_user": None}
@@ -22,6 +29,242 @@ def admin_login(username, password):
 def logout_user():
     """Clears the current session"""
     USER_SESSIONS["current_user"] = None
+
+#-------------------------------Customer Management--------------------------------------------------
+def add_customer(app):
+        """Add a new customer"""
+        def save_customer():
+            try:
+                customer_id = id_entry.get()
+                name = name_entry.get()
+                email = email_entry.get()
+                phone = phone_entry.get()
+                address = address_entry.get()
+                
+                if not all([customer_id, name, email, phone, address]):
+                    messagebox.showerror("Error", "All fields are required!")
+                    return
+                
+                app.cursor.execute("""
+                    INSERT INTO Customer (CustomerID, CustomerName, Email, Phone, Address)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (customer_id, name, email, phone, address))
+
+                app.conn.commit()
+                messagebox.showinfo("Success", "Customer added successfully!")
+                add_window.destroy()
+                view_customers(app)  # Refresh the view
+
+            except sqlite3.IntegrityError:
+                messagebox.showerror("Error", "Customer ID already exists!")
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to add customer: {str(e)}")
+        
+        # Create add customer window
+        add_window = tk.Toplevel(app.root)
+        add_window.title("Add New Customer")
+        add_window.geometry("400x500")
+        
+        # Form fields
+        tk.Label(add_window, text="Customer ID:").pack(pady=5)
+        id_entry = tk.Entry(add_window, width=30)
+        id_entry.pack(pady=5)
+        
+        tk.Label(add_window, text="Name:").pack(pady=5)
+        name_entry = tk.Entry(add_window, width=30)
+        name_entry.pack(pady=5)
+        
+        tk.Label(add_window, text="Email:").pack(pady=5)
+        email_entry = tk.Entry(add_window, width=30)
+        email_entry.pack(pady=5)
+        
+        tk.Label(add_window, text="Phone:").pack(pady=5)
+        phone_entry = tk.Entry(add_window, width=30)
+        phone_entry.pack(pady=5)
+        
+        tk.Label(add_window, text="Address:").pack(pady=5)
+        address_entry = tk.Entry(add_window, width=30)
+        address_entry.pack(pady=5)
+        
+        tk.Button(add_window, text="Save Customer", command=save_customer,
+                 bg='#4CAF50', fg='black', font=('Arial', 15, 'bold')).pack(pady=20)
+
+def view_customers(app):
+        """Display all customers in the treeview"""
+        for item in app.customer_tree.get_children():
+            app.customer_tree.delete(item)
+
+        try:
+            app.cursor.execute("SELECT * FROM Customer")
+            customers = app.cursor.fetchall()
+            
+            for customer in customers:
+                app.customer_tree.insert('', 'end', values=customer)
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to fetch customers: {str(e)}")
+
+def search_customer(app):
+        """Search for customers by name or email"""
+        search_term = simpledialog.askstring("Search Customer", "Enter customer name or email:")
+        if not search_term:
+            return
+
+        for item in app.customer_tree.get_children():
+            app.customer_tree.delete(item)
+        
+        try:
+            app.cursor.execute("""
+                SELECT * FROM Customer 
+                WHERE CustomerName LIKE ? OR Email LIKE ?
+            """, (f'%{search_term}%', f'%{search_term}%'))
+
+            customers = app.cursor.fetchall()
+            
+            for customer in customers:
+                app.customer_tree.insert('', 'end', values=customer)
+
+            if not customers:
+                messagebox.showinfo("Search Results", "No customers found matching your search.")
+        except Exception as e:
+            messagebox.showerror("Error", f"Search failed: {str(e)}")            
+
+def update_customer(app):
+    """GUI function to update customer data"""
+    # Get selected item from treeview
+    selected_item = app.customer_tree.selection()
+    
+    if not selected_item:
+        messagebox.showwarning("Warning", "Please select a customer to update.")
+        return
+    
+    # Get customer data from selected row
+    customer_data = app.customer_tree.item(selected_item[0])['values']
+    customer_id = customer_data[0]
+    current_name = customer_data[1]
+    current_email = customer_data[2]
+    current_phone = customer_data[3]
+    current_address = customer_data[4]
+    
+    # Create update window
+    update_window = tk.Toplevel(app.root)
+    update_window.title("Update Customer")
+    update_window.geometry("400x500")
+    update_window.resizable(False, False)
+    
+    # Center the window
+    update_window.transient(app.root)
+    update_window.grab_set()
+    
+    # Create form fields
+    tk.Label(update_window, text="Update Customer Information", 
+             font=('Arial', 14, 'bold')).pack(pady=10)
+    
+    # Name field
+    tk.Label(update_window, text="Name:").pack(anchor='w', padx=20)
+    name_var = tk.StringVar(value=current_name)
+    name_entry = tk.Entry(update_window, textvariable=name_var, width=40)
+    name_entry.pack(pady=5, padx=20)
+    
+    # Email field
+    tk.Label(update_window, text="Email:").pack(anchor='w', padx=20)
+    email_var = tk.StringVar(value=current_email)
+    email_entry = tk.Entry(update_window, textvariable=email_var, width=40)
+    email_entry.pack(pady=5, padx=20)
+    
+    # Phone field
+    tk.Label(update_window, text="Phone:").pack(anchor='w', padx=20)
+    phone_var = tk.StringVar(value=current_phone)
+    phone_entry = tk.Entry(update_window, textvariable=phone_var, width=40)
+    phone_entry.pack(pady=5, padx=20)
+    
+    # Address field
+    tk.Label(update_window, text="Address:").pack(anchor='w', padx=20)
+    address_var = tk.StringVar(value=current_address)
+    address_entry = tk.Entry(update_window, textvariable=address_var, width=40)
+    address_entry.pack(pady=5, padx=20)
+    
+    def save_updates():
+        """Save the updated customer information"""
+        new_name = name_var.get().strip()
+        new_email = email_var.get().strip()
+        new_phone = phone_var.get().strip()
+        new_address = address_var.get().strip()
+        
+        # Validate required fields
+        if not new_name or not new_email:
+            messagebox.showerror("Error", "Name and Email are required fields.")
+            return
+        
+        try:
+            # Update customer in database (assuming you have a database connection object)
+            cursor = app.cursor  
+            
+            # Update all fields at once
+            cursor.execute("""
+                UPDATE Customer 
+                SET CustomerName = ?, Email = ?, Phone = ?, Address = ? 
+                WHERE CustomerID = ?
+            """, (new_name, new_email, new_phone, new_address, customer_id))
+            
+            app.conn.commit()  
+            
+            # Update the treeview
+            app.customer_tree.item(selected_item[0], values=(
+                customer_id, new_name, new_email, new_phone, new_address
+            ))
+            
+            messagebox.showinfo("Success", "Customer updated successfully!")
+            update_window.destroy()
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to update customer: {e}")
+    
+    # Buttons
+    btn_frame = tk.Frame(update_window)
+    btn_frame.pack(pady=20)
+    
+    tk.Button(btn_frame, text="Save Changes", command=save_updates,
+              bg='#4CAF50', fg='black', font=('Arial', 15, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Cancel", command=update_window.destroy,
+              bg='#f44336', fg='black', font=('Arial', 15, 'bold')).pack(side='left', padx=5)
+
+def delete_customer(app):
+    """GUI function to delete customer data"""
+    # Get selected item from treeview
+    selected_item = app.customer_tree.selection()
+    
+    if not selected_item:
+        messagebox.showwarning("Warning", "Please select a customer to delete.")
+        return
+    
+    # Get customer data from selected row
+    customer_data = app.customer_tree.item(selected_item[0])['values']
+    customer_id = customer_data[0]
+    customer_name = customer_data[1]
+    
+    # Confirm deletion
+    confirm = messagebox.askyesno(
+        "Confirm Deletion", 
+        f"Are you sure you want to delete customer '{customer_name}' (ID: {customer_id})?\n\n"
+        "This action cannot be undone."
+    )
+    
+    if not confirm:
+        return
+    
+    try:
+        # Delete customer from database
+        cursor = app.cursor  # Adjust this to your database connection
+        cursor.execute("DELETE FROM Customer WHERE CustomerID = ?", (customer_id,))
+        app.conn.commit()  # Adjust this to your database connection
+        
+        # Remove from treeview
+        app.customer_tree.delete(selected_item[0])
+        
+        messagebox.showinfo("Success", "Customer deleted successfully!")
+        
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to delete customer: {e}")
 
 #-------------------------------------------PRODUCT MANAGEMENT---------------------------------
 # Add a new product
@@ -137,44 +380,7 @@ def fill_product_entries(app, row):
         app.product_entries[key].delete(0, 'end')
         app.product_entries[key].insert(0, row[i])
 
-#-------------------------------Customer Management--------------------------------------------------
-def add_customer(self, customer_id, name, email, phone):
-    try:
-        self.cursor.execute('''
-            INSERT INTO Customer (CustomerID, Name, Email, Phone)
-            VALUES (?, ?, ?, ?)
-        ''', (customer_id, name, email, phone))
-        self.conn.commit()
-        messagebox.showinfo("Success", "Customer added successfully.")
-    except sqlite3.IntegrityError:
-        messagebox.showerror("Error", "Customer ID already exists.")
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to add customer: {e}")
 
-def view_customers(self):
-    self.cursor.execute("SELECT * FROM Customer")
-    return self.cursor.fetchall()
-
-def update_customer(self, customer_id, name=None, email=None, phone=None):
-    try:
-        if name:
-            self.cursor.execute("UPDATE Customer SET Name = ? WHERE CustomerID = ?", (name, customer_id))
-        if email:
-            self.cursor.execute("UPDATE Customer SET Email = ? WHERE CustomerID = ?", (email, customer_id))
-        if phone:
-            self.cursor.execute("UPDATE Customer SET Phone = ? WHERE CustomerID = ?", (phone, customer_id))
-        self.conn.commit()
-        messagebox.showinfo("Success", "Customer updated successfully.")
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to update customer: {e}")
-
-def delete_customer(self, customer_id):
-    try:
-        self.cursor.execute("DELETE FROM Customer WHERE CustomerID = ?", (customer_id,))
-        self.conn.commit()
-        messagebox.showinfo("Success", "Customer deleted successfully.")
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to delete customer: {e}")
 
 #-------------------------------Stock Management--------------------------------------------------------
 def adjust_stock(self, product_id, quantity_change):
@@ -195,6 +401,51 @@ def get_low_stock_items(self, threshold=5):
     self.cursor.execute("SELECT * FROM Product WHERE StockQuantity <= ?", (threshold,))
     return self.cursor.fetchall()
 
+#------------------------------------Custom SQL Queries-------------------------------------------------
+
+def execute_sql_query(app):
+        """Execute custom SQL query"""
+        query = app.sql_text.get('1.0', tk.END).strip()
+        if not query:
+            messagebox.showerror("Error", "Please enter a SQL query!")
+            return
+        
+        # Clear previous results
+        for item in app.result_tree.get_children():
+            app.result_tree.delete(item)
+
+        try:
+            app.cursor.execute(query)
+
+            if query.strip().upper().startswith('SELECT'):
+                # For SELECT queries, display results
+                results = app.cursor.fetchall()
+
+                if results:
+                    # Set up columns based on the first result
+                    columns = [description[0] for description in app.cursor.description]
+                    app.result_tree['columns'] = columns
+                    app.result_tree['show'] = 'headings'
+                    
+                    # Configure column headings
+                    for col in columns:
+                        app.result_tree.heading(col, text=col)
+                        app.result_tree.column(col, width=100)
+                    
+                    # Insert data
+                    for row in results:
+                        app.result_tree.insert('', 'end', values=row)
+
+                    messagebox.showinfo("Success", f"Query executed successfully! {len(results)} rows returned.")
+                else:
+                    messagebox.showinfo("Success", "Query executed successfully! No rows returned.")
+            else:
+                # For non-SELECT queries, commit changes
+                app.conn.commit()
+                messagebox.showinfo("Success", f"Query executed successfully! {app.cursor.rowcount} rows affected.")
+
+        except Exception as e:
+            messagebox.showerror("SQL Error", f"Query execution failed: {str(e)}")
 #------------------------------------Search & Filter-------------------------------------------------
 def search_customers(self, keyword):
     query = "%" + keyword + "%"
