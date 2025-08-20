@@ -51,6 +51,7 @@ def update_product(app):
             UPDATE Product
             SET ProductName = ?, ProductPrice = ?, Category = ?, Size = ?, StockQty = ?
             WHERE ProductID = ?
+            
         """, (values[1], values[2], values[3], values[4], values[5], values[0]))
         if app.cursor.rowcount == 0:
             messagebox.showwarning("Not Found", "No product found with that ID.")
