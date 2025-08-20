@@ -341,23 +341,28 @@ def search_product(app):
     except Exception as e:
         messagebox.showerror("Error", f"Failed to search product: {e}")
 
-
-# View all products
+# Product management methods
 def view_products(app):
-    try:
-        app.cursor.execute("SELECT * FROM Product")
-        rows = app.cursor.fetchall()
-
-        # Clear old rows
+        """Display all products"""
         for item in app.product_tree.get_children():
             app.product_tree.delete(item)
+        
+        try:
+            # Check which table exists (Products or Product)
+            app.cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND (name='Products' OR name='Product')")
+            product_table = app.cursor.fetchone()
 
-        # Insert new rows
-        for row in rows:
-            app.product_tree.insert("", "end", values=row)
-
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to retrieve products: {e}")
+            if product_table:
+                table_name = product_table[0]
+                app.cursor.execute(f"SELECT * FROM {table_name}")
+                products = app.cursor.fetchall()
+                
+                for product in products:
+                    app.product_tree.insert('', 'end', values=product)
+            else:
+                messagebox.showinfo("Info", "No product table found. Please add some products first.")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to fetch products: {str(e)}")
 
 #Clear all data in entries :D
 def clear_product_entries(app):
@@ -380,6 +385,126 @@ def fill_product_entries(app, row):
         app.product_entries[key].delete(0, 'end')
         app.product_entries[key].insert(0, row[i])
 
+#-------------------------------Order Management--------------------------------------------------------
+
+def view_orders(app):
+        """Display all orders"""
+        for item in app.order_tree.get_children():
+            app.order_tree.delete(item)
+        
+        try:
+            app.cursor.execute("SELECT * FROM OrderTable")
+            orders = app.cursor.fetchall()
+            
+            for order in orders:
+                app.order_tree.insert('', 'end', values=order)
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to fetch orders: {str(e)}")
+def create_order(app):
+        """Add a new order"""
+        def save_order():
+            try:
+                order_id = order_id_entry.get()
+                order_date = order_date_entry.get()
+                total_amount = total_amount_entry.get()
+                customer_id = customer_id_entry.get()
+                status = status_entry.get()
+
+                if not all([customer_id, order_date, total_amount, status]):
+                    messagebox.showerror("Error", "All fields are required!")
+                    return
+                
+                app.cursor.execute("""
+                    INSERT INTO OrderTable (OrderID, OrderDate, TotalAmount, CustomerID, Status)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (order_id, order_date, total_amount, customer_id, status))
+
+                app.conn.commit()
+                messagebox.showinfo("Success", "Order added successfully!")
+                add_window.destroy()
+                view_customers(app)  # Refresh the view
+
+            except sqlite3.IntegrityError:
+                messagebox.showerror("Error", "Order ID already exists!")
+            except Exception as e:
+                messagebox.showerror("Error", f"Failed to add order: {str(e)}")
+        
+        # Create add customer window
+        add_window = tk.Toplevel(app.root)
+        add_window.title("Add New Order")
+        add_window.geometry("400x500")
+        
+        # Form fields
+        tk.Label(add_window, text="Order ID:").pack(pady=5)
+        order_id_entry = tk.Entry(add_window, width=30)
+        order_id_entry.pack(pady=5)
+        
+        tk.Label(add_window, text="Date:").pack(pady=5)
+        order_date_entry = tk.Entry(add_window, width=30)
+        order_date_entry.pack(pady=5)
+
+        tk.Label(add_window, text="Amount:").pack(pady=5)
+        total_amount_entry = tk.Entry(add_window, width=30)
+        total_amount_entry.pack(pady=5)
+
+        tk.Label(add_window, text="Customer ID:").pack(pady=5)
+        customer_id_entry = tk.Entry(add_window, width=30)
+        customer_id_entry.pack(pady=5)
+
+        tk.Label(add_window, text="Status:").pack(pady=5)
+        status_entry = tk.Entry(add_window, width=30)
+        status_entry.pack(pady=5)
+
+        tk.Button(add_window, text="Save Order", command=save_order,
+                 bg='#4CAF50', fg='black', font=('Arial', 15, 'bold')).pack(pady=20)
+
+def update_order_status(app):
+        """Update order status"""
+        order_id = simpledialog.askstring("Update Order", "Enter Order ID:")
+        if not order_id:
+            return
+        
+        status = simpledialog.askstring("Update Order", "Enter new status (Pending/Processing/Shipped/Delivered):")
+        if not status:
+            return
+        
+        try:
+            app.cursor.execute("UPDATE OrderTable SET Status = ? WHERE OrderID = ?", (status, order_id))
+
+            if app.cursor.rowcount > 0:
+                app.conn.commit()
+                messagebox.showinfo("Success", f"Order {order_id} status updated to {status}")
+                view_orders(app)
+            else:
+                messagebox.showerror("Error", "Order ID not found!")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to update order: {str(e)}")
+
+# Helpers
+def get_order_entry_values(app):
+    return [
+        app.order_entries['OrderID'].get(),
+        app.order_entries['CustomerID'].get(),
+        app.order_entries['OrderDate'].get(),
+        float(app.order_entries['TotalAmount'].get()),
+        app.order_entries['Status'].get()
+    ]
+#-------------------------------Payment Management--------------------------------------------------------
+
+# Payment management methods
+def view_payments(app):
+    """Display all payments"""
+    for item in app.payment_tree.get_children():
+        app.payment_tree.delete(item)
+
+    try:
+        app.cursor.execute("SELECT * FROM Payment")
+        payments = app.cursor.fetchall()
+                
+        for payment in payments:
+            app.payment_tree.insert('', 'end', values=payment)
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to fetch payments: {str(e)}")
 
 
 #-------------------------------Stock Management--------------------------------------------------------

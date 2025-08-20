@@ -117,7 +117,7 @@ def create_order_tab(app):  # Changed from self to app
     btn_frame = tk.Frame(order_frame)
     btn_frame.pack(pady=10)
     
-    tk.Button(btn_frame, text="View All Orders", command=lambda: func.view_all_orders(app),
+    tk.Button(btn_frame, text="View All Orders", command=lambda: func.view_orders(app),
              bg='#4CAF50', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
     tk.Button(btn_frame, text="Create Order", command=lambda: func.create_order(app),
              bg='#2196F3', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
@@ -125,18 +125,18 @@ def create_order_tab(app):  # Changed from self to app
              bg='#FF9800', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
 
     # Treeview for displaying orders
-    app.order_tree = ttk.Treeview(order_frame, columns=('OrderID', 'CustomerID', 'Date', 'Amount', 'Status'), show='headings')
+    app.order_tree = ttk.Treeview(order_frame, columns=('OrderID', 'Date', 'Amount', 'CustomerID', 'Status'), show='headings')
     app.order_tree.heading('OrderID', text='Order ID')
-    app.order_tree.heading('CustomerID', text='Customer ID')
     app.order_tree.heading('Date', text='Order Date')
     app.order_tree.heading('Amount', text='Total Amount')
+    app.order_tree.heading('CustomerID', text='Customer ID')
     app.order_tree.heading('Status', text='Status')
     
     # Set column widths
     app.order_tree.column('OrderID', width=100)
-    app.order_tree.column('CustomerID', width=100)
     app.order_tree.column('Date', width=120)
     app.order_tree.column('Amount', width=100)
+    app.order_tree.column('CustomerID', width=100)
     app.order_tree.column('Status', width=100)
     
     app.order_tree.pack(fill='both', expand=True, padx=10, pady=10)
@@ -150,7 +150,7 @@ def create_payment_tab(app):  # Changed from self to app
     btn_frame = tk.Frame(payment_frame)
     btn_frame.pack(pady=10)
     
-    tk.Button(btn_frame, text="View All Payments", command=lambda: func.view_all_payments(app),
+    tk.Button(btn_frame, text="View All Payments", command=lambda: func.view_payments(app),
              bg='#4CAF50', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
     tk.Button(btn_frame, text="Process Payment", command=lambda: func.process_payment(app),
              bg='#2196F3', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
