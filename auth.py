@@ -155,7 +155,7 @@ def show_login_window():
                          activebackground="#1976D2", activeforeground="black",
                          cursor="hand2", 
                          width=25, height=2)
-    login_btn.pack(pady=(30, 20))
+    login_btn.pack(pady=(10, 20))
 
     # Hover effects for the button
     def on_button_enter(e):
