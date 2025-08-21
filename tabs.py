@@ -152,23 +152,21 @@ def create_payment_tab(app):  # Changed from self to app
     
     tk.Button(btn_frame, text="View All Payments", command=lambda: func.view_payments(app),
              bg='#4CAF50', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-    tk.Button(btn_frame, text="Process Payment", command=lambda: func.process_payment(app),
-             bg='#2196F3', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
 
     # Treeview for displaying payments
-    app.payment_tree = ttk.Treeview(payment_frame, columns=('PaymentID', 'OrderID', 'Date', 'Amount', 'Method', 'Status'), show='headings')
+    app.payment_tree = ttk.Treeview(payment_frame, columns=('PaymentID', 'OrderID', 'Amount', 'Date', 'Method', 'Status'), show='headings')
     app.payment_tree.heading('PaymentID', text='Payment ID')
     app.payment_tree.heading('OrderID', text='Order ID')
-    app.payment_tree.heading('Date', text='Payment Date')
     app.payment_tree.heading('Amount', text='Amount')
-    app.payment_tree.heading('Method', text='Method')
-    app.payment_tree.heading('Status', text='Status')
-    
+    app.payment_tree.heading('Date', text='Payment Date')
+    app.payment_tree.heading('Method', text='Payment Method')
+    app.payment_tree.heading('Status', text='Payment Status')
+
     # Set column widths
     app.payment_tree.column('PaymentID', width=100)
     app.payment_tree.column('OrderID', width=100)
-    app.payment_tree.column('Date', width=120)
-    app.payment_tree.column('Amount', width=100)
+    app.payment_tree.column('Amount', width=120)
+    app.payment_tree.column('Date', width=100)
     app.payment_tree.column('Method', width=100)
     app.payment_tree.column('Status', width=100)
     

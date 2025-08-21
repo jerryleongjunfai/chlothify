@@ -1,4 +1,5 @@
-from tkinter import messagebox, simpledialog
+from datetime import datetime
+from tkinter import messagebox, simpledialog, ttk
 import sqlite3
 import tkinter as tk
 
@@ -402,62 +403,310 @@ def view_orders(app):
         except Exception as e:
             messagebox.showerror("Error", f"Failed to fetch orders: {str(e)}")
 def create_order(app):
-        """Add a new order"""
-        def save_order():
+    """Add a new order with complete form and automatic payment creation"""
+    
+    # Create order window
+    add_window = tk.Toplevel(app.root)
+    add_window.title("Add New Order")
+    add_window.geometry("450x700")
+    add_window.resizable(False, False)
+    add_window.transient(app.root)
+    add_window.grab_set()
+    
+    # Configure window background
+    add_window.configure(bg='#f0f0f0')
+    
+    # Title
+    title_label = tk.Label(add_window, text="Add New Order", 
+                          font=('Arial', 18, 'bold'), bg='#f0f0f0', fg='#333')
+    title_label.pack(pady=15)
+    
+    # Main form frame with better styling
+    form_frame = tk.Frame(add_window, bg='#f0f0f0')
+    form_frame.pack(pady=10, padx=30, fill='both', expand=True)
+    
+    # Order ID
+    tk.Label(form_frame, text="Order ID:", font=('Arial', 12, 'bold'), 
+             bg='#f0f0f0', fg='#333').grid(row=0, column=0, sticky='w', pady=10)
+    order_id_entry = tk.Entry(form_frame, width=25, font=('Arial', 11))
+    order_id_entry.grid(row=0, column=1, pady=10, padx=(10, 0), sticky='w')
+    
+    # Customer ID
+    tk.Label(form_frame, text="Customer ID:", font=('Arial', 12, 'bold'), 
+             bg='#f0f0f0', fg='#333').grid(row=1, column=0, sticky='w', pady=10)
+    customer_id_entry = tk.Entry(form_frame, width=25, font=('Arial', 11))
+    customer_id_entry.grid(row=1, column=1, pady=10, padx=(10, 0), sticky='w')
+    
+    # Order Date
+    tk.Label(form_frame, text="Date:", font=('Arial', 12, 'bold'), 
+             bg='#f0f0f0', fg='#333').grid(row=2, column=0, sticky='w', pady=10)
+    order_date_entry = tk.Entry(form_frame, width=25, font=('Arial', 11))
+    order_date_entry.grid(row=2, column=1, pady=10, padx=(10, 0), sticky='w')
+    # Pre-fill with current date
+    order_date_entry.insert(0, datetime.now().strftime("%d/%m/%Y"))
+
+    # Total Amount
+    tk.Label(form_frame, text="Amount:", font=('Arial', 12, 'bold'), 
+             bg='#f0f0f0', fg='#333').grid(row=3, column=0, sticky='w', pady=10)
+    total_amount_entry = tk.Entry(form_frame, width=25, font=('Arial', 11))
+    total_amount_entry.grid(row=3, column=1, pady=10, padx=(10, 0), sticky='w')
+    
+    # Order Status Dropdown
+    tk.Label(form_frame, text="Order Status:", font=('Arial', 12, 'bold'), 
+             bg='#f0f0f0', fg='#333').grid(row=4, column=0, sticky='w', pady=10)
+    status_var = tk.StringVar(value="Pending")
+    status_dropdown = ttk.Combobox(form_frame, textvariable=status_var, 
+                                  width=22, font=('Arial', 11))
+    status_dropdown['values'] = ("Pending", "Processing", "Completed", "Cancelled")
+    status_dropdown['state'] = 'readonly'  # Make it read-only
+    status_dropdown.grid(row=4, column=1, pady=10, padx=(10, 0), sticky='w')
+    
+    # Separator line
+    separator = ttk.Separator(form_frame, orient='horizontal')
+    separator.grid(row=5, column=0, columnspan=2, sticky='ew', pady=20)
+    
+    # Payment section title
+    payment_title = tk.Label(form_frame, text="Payment Information", 
+                            font=('Arial', 14, 'bold'), bg='#f0f0f0', fg='#2196F3')
+    payment_title.grid(row=6, column=0, columnspan=2, pady=(10, 15))
+    
+    # Payment Method Dropdown
+    tk.Label(form_frame, text="Payment Method:", font=('Arial', 12, 'bold'), 
+             bg='#f0f0f0', fg='#333').grid(row=7, column=0, sticky='w', pady=10)
+    payment_method_var = tk.StringVar(value="Cash")
+    payment_method_dropdown = ttk.Combobox(form_frame, textvariable=payment_method_var, 
+                                          width=22, font=('Arial', 11))
+    payment_method_dropdown['values'] = ("Cash", "Credit Card", "Debit Card", 
+                                        "Bank Transfer", "Digital Wallet", "Check")
+    payment_method_dropdown['state'] = 'readonly'
+    payment_method_dropdown.grid(row=7, column=1, pady=10, padx=(10, 0), sticky='w')
+    
+    # Payment Date
+    tk.Label(form_frame, text="Payment Date:", font=('Arial', 12, 'bold'), 
+             bg='#f0f0f0', fg='#333').grid(row=8, column=0, sticky='w', pady=10)
+    payment_date_entry = tk.Entry(form_frame, width=25, font=('Arial', 11))
+    payment_date_entry.grid(row=8, column=1, pady=10, padx=(10, 0), sticky='w')
+    # Pre-fill with current date
+    payment_date_entry.insert(0, datetime.now().strftime("%d/%m/%Y"))
+
+    # Payment Status Dropdown
+    tk.Label(form_frame, text="Payment Status:", font=('Arial', 12, 'bold'), 
+             bg='#f0f0f0', fg='#333').grid(row=9, column=0, sticky='w', pady=10)
+    payment_status_var = tk.StringVar(value="Pending")
+    payment_status_dropdown = ttk.Combobox(form_frame, textvariable=payment_status_var, 
+                                          width=22, font=('Arial', 11))
+    payment_status_dropdown['values'] = ("Pending", "Completed", "Failed", "Refunded")
+    payment_status_dropdown['state'] = 'readonly'
+    payment_status_dropdown.grid(row=9, column=1, pady=10, padx=(10, 0), sticky='w')
+    
+    def save_order():
+        """Save order and automatically create corresponding payment"""
+        try:
+            # Get order values
+            order_id = order_id_entry.get().strip()
+            order_date = order_date_entry.get().strip()
+            total_amount = total_amount_entry.get().strip()
+            customer_id = customer_id_entry.get().strip()
+            status = status_var.get()
+            
+            # Get payment values
+            payment_method = payment_method_var.get()
+            payment_date = payment_date_entry.get().strip()
+            payment_status = payment_status_var.get()
+            
+            # Validate required fields
+            if not all([order_id, customer_id, order_date, total_amount]):
+                messagebox.showerror("Error", "All order fields are required!")
+                return
+            
+            # Validate amount is a number
             try:
-                order_id = order_id_entry.get()
-                order_date = order_date_entry.get()
-                total_amount = total_amount_entry.get()
-                customer_id = customer_id_entry.get()
-                status = status_entry.get()
-
-                if not all([customer_id, order_date, total_amount, status]):
-                    messagebox.showerror("Error", "All fields are required!")
+                amount_float = float(total_amount)
+                if amount_float <= 0:
+                    messagebox.showerror("Error", "Amount must be greater than 0!")
                     return
+            except ValueError:
+                messagebox.showerror("Error", "Amount must be a valid number!")
+                return
+            
+            # Validate dates
+            try:
+                datetime.strptime(order_date, "%d/%m/%Y")
+                datetime.strptime(payment_date, "%d/%m/%Y")
+            except ValueError:
+                messagebox.showerror("Error", "Please use DD/MM/YYYY format for dates!")
+                return
+            
+            # Check if order ID already exists
+            app.cursor.execute("SELECT OrderID FROM OrderTable WHERE OrderID = ?", (order_id,))
+            if app.cursor.fetchone():
+                messagebox.showerror("Error", "Order ID already exists! Please use a different ID.")
+                return
+            
+            # Insert order into OrderTable
+            app.cursor.execute("""
+                INSERT INTO OrderTable (OrderID, OrderDate, TotalAmount, CustomerID, Status)
+                VALUES (?, ?, ?, ?, ?)
+            """, (order_id, order_date, total_amount, customer_id, status))
+            
+            # Generate unique payment ID
+            payment_id = f"PAY_{order_id}_{datetime.now().strftime('%H%M%S')}"
+            
+            # Insert corresponding payment record
+            app.cursor.execute("""
+                INSERT INTO Payment (PaymentID, OrderID, PaymentDate, Amount, PaymentMethod, Status)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (payment_id, order_id, payment_date, total_amount, payment_method, payment_status))
+            
+            # Commit both transactions
+            app.conn.commit()
+            
+            messagebox.showinfo("Success", 
+                              f"✓ Order {order_id} added successfully!\n"
+                              f"✓ Payment record {payment_id} created automatically!\n\n"
+                              f"Order Amount: ${total_amount}\n"
+                              f"Payment Method: {payment_method}")
+            
+            add_window.destroy()
+            
+            # Refresh views if they exist
+            view_orders(app)
+            view_payments(app)
+
+        except Exception as e:
+            app.conn.rollback()  # Rollback in case of error
+            messagebox.showerror("Error", f"Failed to add order: {str(e)}")
+    
+    # Buttons frame
+    btn_frame = tk.Frame(add_window, bg='#f0f0f0')
+    btn_frame.pack(pady=25)
+    
+    # Save button
+    save_btn = tk.Button(btn_frame, text="💾 Save Order & Payment", command=save_order,
+                        bg='#4CAF50', fg='white', font=('Arial', 12, 'bold'),
+                        padx=20, pady=10, relief='flat', cursor='hand2')
+    save_btn.pack(side='left', padx=10)
+    
+    # Cancel button  
+    cancel_btn = tk.Button(btn_frame, text="✖ Cancel", command=add_window.destroy,
+                          bg='#f44336', fg='white', font=('Arial', 12, 'bold'),
+                          padx=20, pady=10, relief='flat', cursor='hand2')
+    cancel_btn.pack(side='left', padx=10)
+    
+    # Add hover effects
+    def on_save_hover(e):
+        save_btn.config(bg='#45a049')
+    def on_save_leave(e):
+        save_btn.config(bg='#4CAF50')
+    
+    def on_cancel_hover(e):
+        cancel_btn.config(bg='#da190b')
+    def on_cancel_leave(e):
+        cancel_btn.config(bg='#f44336')
+    
+    save_btn.bind("<Enter>", on_save_hover)
+    save_btn.bind("<Leave>", on_save_leave)
+    cancel_btn.bind("<Enter>", on_cancel_hover)
+    cancel_btn.bind("<Leave>", on_cancel_leave)
+    
+    # Focus on first entry
+    order_id_entry.focus_set()
+
+def create_simple_order_with_auto_payment(app):
+    """Simple order form that automatically creates payment with defaults"""
+    
+    add_window = tk.Toplevel(app.root)
+    add_window.title("Add New Order")
+    add_window.geometry("400x350")
+    add_window.resizable(False, False)
+    add_window.transient(app.root)
+    add_window.grab_set()
+    add_window.configure(bg='#f0f0f0')
+    
+    # Title
+    tk.Label(add_window, text="Add New Order", font=('Arial', 16, 'bold'), 
+             bg='#f0f0f0').pack(pady=15)
+    
+    # Form frame
+    form_frame = tk.Frame(add_window, bg='#f0f0f0')
+    form_frame.pack(pady=10, padx=30)
+    
+    # Order fields only
+    tk.Label(form_frame, text="Order ID:", font=('Arial', 11, 'bold'), 
+             bg='#f0f0f0').grid(row=0, column=0, sticky='w', pady=8)
+    order_id_entry = tk.Entry(form_frame, width=25, font=('Arial', 10))
+    order_id_entry.grid(row=0, column=1, pady=8, padx=(10, 0))
+    
+    tk.Label(form_frame, text="Customer ID:", font=('Arial', 11, 'bold'), 
+             bg='#f0f0f0').grid(row=1, column=0, sticky='w', pady=8)
+    customer_id_entry = tk.Entry(form_frame, width=25, font=('Arial', 10))
+    customer_id_entry.grid(row=1, column=1, pady=8, padx=(10, 0))
+    
+    tk.Label(form_frame, text="Date:", font=('Arial', 11, 'bold'), 
+             bg='#f0f0f0').grid(row=2, column=0, sticky='w', pady=8)
+    order_date_entry = tk.Entry(form_frame, width=25, font=('Arial', 10))
+    order_date_entry.grid(row=2, column=1, pady=8, padx=(10, 0))
+    order_date_entry.insert(0, datetime.now().strftime("%d-%m-%Y"))
+    
+    tk.Label(form_frame, text="Amount:", font=('Arial', 11, 'bold'), 
+             bg='#f0f0f0').grid(row=3, column=0, sticky='w', pady=8)
+    total_amount_entry = tk.Entry(form_frame, width=25, font=('Arial', 10))
+    total_amount_entry.grid(row=3, column=1, pady=8, padx=(10, 0))
+    
+    tk.Label(form_frame, text="Status:", font=('Arial', 11, 'bold'), 
+             bg='#f0f0f0').grid(row=4, column=0, sticky='w', pady=8)
+    status_var = tk.StringVar(value="Pending")
+    status_dropdown = ttk.Combobox(form_frame, textvariable=status_var, width=22)
+    status_dropdown['values'] = ("Pending", "Processing", "Completed", "Cancelled")
+    status_dropdown['state'] = 'readonly'
+    status_dropdown.grid(row=4, column=1, pady=8, padx=(10, 0))
+    
+    def save_simple_order():
+        try:
+            order_id = order_id_entry.get().strip()
+            order_date = order_date_entry.get().strip()
+            total_amount = total_amount_entry.get().strip()
+            customer_id = customer_id_entry.get().strip()
+            status = status_var.get()
+            
+            if not all([order_id, customer_id, order_date, total_amount]):
+                messagebox.showerror("Error", "All fields are required!")
+                return
                 
-                app.cursor.execute("""
-                    INSERT INTO OrderTable (OrderID, OrderDate, TotalAmount, CustomerID, Status)
-                    VALUES (?, ?, ?, ?, ?)
-                """, (order_id, order_date, total_amount, customer_id, status))
+            # Insert order
+            app.cursor.execute("""
+                INSERT INTO OrderTable (OrderID, OrderDate, TotalAmount, CustomerID, Status)
+                VALUES (?, ?, ?, ?, ?)
+            """, (order_id, order_date, total_amount, customer_id, status))
+            
+            # Auto-create payment with defaults
+            payment_id = f"PAY_{order_id}_{datetime.now().strftime('%H%M%S')}"
+            payment_date = datetime.now().strftime("%d-%m-%Y")
 
-                app.conn.commit()
-                messagebox.showinfo("Success", "Order added successfully!")
-                add_window.destroy()
-                view_customers(app)  # Refresh the view
-
-            except sqlite3.IntegrityError:
-                messagebox.showerror("Error", "Order ID already exists!")
-            except Exception as e:
-                messagebox.showerror("Error", f"Failed to add order: {str(e)}")
-        
-        # Create add customer window
-        add_window = tk.Toplevel(app.root)
-        add_window.title("Add New Order")
-        add_window.geometry("400x500")
-        
-        # Form fields
-        tk.Label(add_window, text="Order ID:").pack(pady=5)
-        order_id_entry = tk.Entry(add_window, width=30)
-        order_id_entry.pack(pady=5)
-        
-        tk.Label(add_window, text="Date:").pack(pady=5)
-        order_date_entry = tk.Entry(add_window, width=30)
-        order_date_entry.pack(pady=5)
-
-        tk.Label(add_window, text="Amount:").pack(pady=5)
-        total_amount_entry = tk.Entry(add_window, width=30)
-        total_amount_entry.pack(pady=5)
-
-        tk.Label(add_window, text="Customer ID:").pack(pady=5)
-        customer_id_entry = tk.Entry(add_window, width=30)
-        customer_id_entry.pack(pady=5)
-
-        tk.Label(add_window, text="Status:").pack(pady=5)
-        status_entry = tk.Entry(add_window, width=30)
-        status_entry.pack(pady=5)
-
-        tk.Button(add_window, text="Save Order", command=save_order,
-                 bg='#4CAF50', fg='black', font=('Arial', 15, 'bold')).pack(pady=20)
+            app.cursor.execute("""
+                INSERT INTO Payment (PaymentID, OrderID, PaymentDate, Amount, PaymentMethod, Status)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (payment_id, order_id, payment_date, total_amount, "Cash", "Pending"))
+            
+            app.conn.commit()
+            
+            messagebox.showinfo("Success", f"Order {order_id} added with automatic payment!")
+            add_window.destroy()
+            
+        except Exception as e:
+            app.conn.rollback()
+            messagebox.showerror("Error", f"Failed to add order: {e}")
+    
+    # Buttons
+    btn_frame = tk.Frame(add_window, bg='#f0f0f0')
+    btn_frame.pack(pady=20)
+    
+    tk.Button(btn_frame, text="Save Order", command=save_simple_order,
+              bg='#4CAF50', fg='white', font=('Arial', 11, 'bold'),
+              padx=20, pady=8, relief='flat').pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Cancel", command=add_window.destroy,
+              bg='#f44336', fg='white', font=('Arial', 11, 'bold'),
+              padx=20, pady=8, relief='flat').pack(side='left', padx=5)
 
 def update_order_status(app):
         """Update order status"""
