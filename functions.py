@@ -268,124 +268,263 @@ def delete_customer(app):
         messagebox.showerror("Error", f"Failed to delete customer: {e}")
 
 #-------------------------------------------PRODUCT MANAGEMENT---------------------------------
-# Add a new product
 def add_product(app):
-    try:
-        values = get_product_entry_values(app)
-        if any(v == "" for v in values):
-            messagebox.showerror("Input Error", "All fields must be filled.")
-            return
-
-        app.cursor.execute("""
-            INSERT INTO Product (ProductID, ProductName, ProductPrice, Category, Size, StockQty)
-            VALUES (?, ?, ?, ?, ?, ?)
-        """, values)
-        app.conn.commit()
-        messagebox.showinfo("Success", "Product added successfully!")
-        view_products(app)
-
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to add product: {e}")
-
-
-# Update existing product
-def update_product(app):
-    try:
-        values = get_product_entry_values(app)
-        app.cursor.execute("""
-            UPDATE Product
-            SET ProductName = ?, ProductPrice = ?, Category = ?, Size = ?, StockQty = ?
-            WHERE ProductID = ?
+    """Add a new product"""
+    def save_product():
+        try:
+            product_id = id_entry.get()
+            name = name_entry.get()
+            category = category_entry.get()
+            price = price_entry.get()
+            size = size_entry.get()
+            stock = stock_entry.get()
             
-        """, (values[1], values[2], values[3], values[4], values[5], values[0]))
-        if app.cursor.rowcount == 0:
-            messagebox.showwarning("Not Found", "No product found with that ID.")
-        else:
+            if not all([product_id, name, price, category, size, stock]):
+                messagebox.showerror("Error", "All fields are required!")
+                return
+
+            try:
+                price = float(price)
+                stock = int(stock)
+            except ValueError:
+                messagebox.showerror("Error", "Price must be a number and StockQty must be an integer!")
+                return
+            
+            app.cursor.execute("""
+                INSERT INTO Product (ProductID, ProductName, ProductPrice, Category, Size, StockQty)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, (product_id, name, price, category, size, stock))
+
             app.conn.commit()
-            messagebox.showinfo("Success", "Product updated successfully!")
-            view_products(app)
+            messagebox.showinfo("Success", "Product added successfully!")
+            add_window.destroy()
+            view_products(app)  # Refresh the view
 
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to update product: {e}")
+        except sqlite3.IntegrityError:
+            messagebox.showerror("Error", "Product ID already exists!")
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to add product: {str(e)}")
+    
+    # Create add product window
+    add_window = tk.Toplevel(app.root)
+    add_window.title("Add New Product")
+    add_window.geometry("400x500")
+    
+    # Form fields
+    tk.Label(add_window, text="Product ID:").pack(pady=5)
+    id_entry = tk.Entry(add_window, width=30)
+    id_entry.pack(pady=5)
+    
+    tk.Label(add_window, text="Name:").pack(pady=5)
+    name_entry = tk.Entry(add_window, width=30)
+    name_entry.pack(pady=5)
+    
+    tk.Label(add_window, text="Price:").pack(pady=5)
+    price_entry = tk.Entry(add_window, width=30)
+    price_entry.pack(pady=5)
+
+    tk.Label(add_window, text="Category:").pack(pady=5)
+    category_entry = tk.Entry(add_window, width=30)
+    category_entry.pack(pady=5)
+    
+
+    tk.Label(add_window, text="Size").pack(pady=5)   
+    size_entry = tk.Entry(add_window, width=30)                
+    size_entry.pack(pady=5)                
+    
+    tk.Label(add_window, text="StockQty:").pack(pady=5)
+    stock_entry = tk.Entry(add_window, width=30)
+    stock_entry.pack(pady=5)
+    
+    tk.Button(add_window, text="Save Product", command=save_product,
+             bg='#4CAF50', fg='black', font=('Arial', 15, 'bold')).pack(pady=20)
 
 
-# Delete a product
-def delete_product(app):
-    product_id = app.product_entries['ProductID'].get()
-    if not product_id:
-        messagebox.showerror("Input Error", "Please enter a Product ID to delete.")
-        return
-    try:
-        app.cursor.execute("DELETE FROM Product WHERE ProductID = ?", (product_id,))
-        if app.cursor.rowcount == 0:
-            messagebox.showwarning("Not Found", "No product found with that ID.")
-        else:
-            app.conn.commit()
-            messagebox.showinfo("Success", "Product deleted successfully!")
-            view_products(app)
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to delete product: {e}")
-
-
-# Search a product by ID
-def search_product(app):
-    product_id = app.product_entries['ProductID'].get()
-    if not product_id:
-        messagebox.showerror("Input Error", "Please enter a Product ID to search.")
-        return
-    try:
-        app.cursor.execute("SELECT * FROM Product WHERE ProductID = ?", (product_id,))
-        row = app.cursor.fetchone()
-        if row:
-            fill_product_entries(app, row)
-        else:
-            messagebox.showinfo("Not Found", "No product found with that ID.")
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to search product: {e}")
-
-# Product management methods
 def view_products(app):
-        """Display all products"""
-        for item in app.product_tree.get_children():
-            app.product_tree.delete(item)
+    """Display all products in the treeview"""
+    for item in app.product_tree.get_children():
+        app.product_tree.delete(item)
+
+    try:
+        app.cursor.execute("SELECT * FROM Product")
+        products = app.cursor.fetchall()
+        
+        for product in products:
+            app.product_tree.insert('', 'end', values=product)
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to fetch products: {str(e)}")
+
+
+def search_product(app):
+    """Search for products by name or category"""
+    search_term = simpledialog.askstring("Search Product", "Enter product name or category:")
+    if not search_term:
+        return
+
+    for item in app.product_tree.get_children():
+        app.product_tree.delete(item)
+    
+    try:
+        app.cursor.execute("""
+            SELECT * FROM Product 
+            WHERE ProductName LIKE ? OR Category LIKE ?
+        """, (f'%{search_term}%', f'%{search_term}%'))
+
+        products = app.cursor.fetchall()
+        
+        for product in products:
+            app.product_tree.insert('', 'end', values=product)
+
+        if not products:
+            messagebox.showinfo("Search Results", "No products found matching your search.")
+    except Exception as e:
+        messagebox.showerror("Error", f"Search failed: {str(e)}")
+
+
+def update_product(app):
+    """GUI function to update product data"""
+    # Get selected item from treeview
+    selected_item = app.product_tree.selection()
+    
+    if not selected_item:
+        messagebox.showwarning("Warning", "Please select a product to update.")
+        return
+    
+    # Get product data from selected row
+    product_data = app.product_tree.item(selected_item[0])['values']
+    product_id = product_data[0]
+    current_name = product_data[1]
+    current_price = product_data[2]
+    current_category = product_data[3]
+    current_size = product_data[4]
+    current_stock = product_data[5]
+    
+    # Create update window
+    update_window = tk.Toplevel(app.root)
+    update_window.title("Update Product")
+    update_window.geometry("400x500")
+    update_window.resizable(False, False)
+    
+    # Center the window
+    update_window.transient(app.root)
+    update_window.grab_set()
+    
+    # Create form fields
+    tk.Label(update_window, text="Update Product Information", 
+             font=('Arial', 14, 'bold')).pack(pady=10)
+    
+    # Name field
+    tk.Label(update_window, text="Name:").pack(anchor='w', padx=20)
+    name_var = tk.StringVar(value=current_name)
+    name_entry = tk.Entry(update_window, textvariable=name_var, width=40)
+    name_entry.pack(pady=5, padx=20)
+    
+    # Price field
+    tk.Label(update_window, text="Price:").pack(anchor='w', padx=20)
+    price_var = tk.StringVar(value=current_price)
+    price_entry = tk.Entry(update_window, textvariable=price_var, width=40)
+    price_entry.pack(pady=5, padx=20)
+
+    # Category field
+    tk.Label(update_window, text="Category:").pack(anchor='w', padx=20)
+    category_var = tk.StringVar(value=current_category)
+    category_entry = tk.Entry(update_window, textvariable=category_var, width=40)
+    category_entry.pack(pady=5, padx=20)
+    
+    # Size field
+    tk.Label(update_window, text="Size:").pack(anchor='w', padx=20)
+    size_var = tk.StringVar(value=current_size)
+    size_entry = tk.Entry(update_window, textvariable=size_var, width=40)
+    size_entry.pack(pady=5, padx=20)
+
+    # Stock field
+    tk.Label(update_window, text="StockQty:").pack(anchor='w', padx=20)
+    stock_var = tk.StringVar(value=current_stock)
+    stock_entry = tk.Entry(update_window, textvariable=stock_var, width=40)
+    stock_entry.pack(pady=5, padx=20)
+    
+    def save_updates():
+        """Save the updated product information"""
+        new_name = name_var.get().strip()
+        new_category = category_var.get().strip()
+        new_price = price_var.get().strip()
+        new_size = size_var.get().strip()
+        new_stock = stock_var.get().strip()
+        
+        if not new_name or not new_category or not new_price or not new_stock:
+            messagebox.showerror("Error", "All fields are required.")
+            return
         
         try:
-            # Check which table exists (Products or Product)
-            app.cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND (name='Products' OR name='Product')")
-            product_table = app.cursor.fetchone()
+            new_price = float(new_price)
+            new_stock = int(new_stock)
+        except ValueError:
+            messagebox.showerror("Error", "Price must be a number and Stock must be an integer!")
+            return
 
-            if product_table:
-                table_name = product_table[0]
-                app.cursor.execute(f"SELECT * FROM {table_name}")
-                products = app.cursor.fetchall()
-                
-                for product in products:
-                    app.product_tree.insert('', 'end', values=product)
-            else:
-                messagebox.showinfo("Info", "No product table found. Please add some products first.")
+        try:
+            cursor = app.cursor  
+            
+            cursor.execute("""
+                UPDATE Product 
+                SET ProductName = ?, Category = ?, ProductPrice = ?, Size = ?, StockQty = ? 
+                WHERE ProductID = ?
+            """, (new_name, new_price, new_category, new_stock, new_size, product_id))
+            
+            app.conn.commit()  
+            
+            app.product_tree.item(selected_item[0], values=(
+                product_id, new_name, new_price, new_category, new_size, new_stock
+            ))
+            
+            messagebox.showinfo("Success", "Product updated successfully!")
+            update_window.destroy()
+            
         except Exception as e:
-            messagebox.showerror("Error", f"Failed to fetch products: {str(e)}")
+            messagebox.showerror("Error", f"Failed to update product: {e}")
+    
+    # Buttons
+    btn_frame = tk.Frame(update_window)
+    btn_frame.pack(pady=20)
+    
+    tk.Button(btn_frame, text="Save Changes", command=save_updates,
+              bg='#4CAF50', fg='black', font=('Arial', 15, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Cancel", command=update_window.destroy,
+              bg='#f44336', fg='black', font=('Arial', 15, 'bold')).pack(side='left', padx=5)
 
-#Clear all data in entries :D
-def clear_product_entries(app):
-    for entry in app.product_entries.values():
-        entry.delete(0, 'end')
-# Helpers
-def get_product_entry_values(app):
-    return [
-        app.product_entries['ProductID'].get(),
-        app.product_entries['ProductName'].get(),
-        float(app.product_entries['ProductPrice'].get()),
-        app.product_entries['Category'].get(),
-        app.product_entries['Size'].get(),
-        int(app.product_entries['StockQty'].get())
-    ]
 
-def fill_product_entries(app, row):
-    keys = ['ProductID', 'ProductName', 'ProductPrice', 'Category', 'Size', 'StockQty']
-    for i, key in enumerate(keys):
-        app.product_entries[key].delete(0, 'end')
-        app.product_entries[key].insert(0, row[i])
+def delete_product(app):
+    """GUI function to delete product data"""
+    selected_item = app.product_tree.selection()
+    
+    if not selected_item:
+        messagebox.showwarning("Warning", "Please select a product to delete.")
+        return
+    
+    product_data = app.product_tree.item(selected_item[0])['values']
+    product_id = product_data[0]
+    product_name = product_data[1]
+    
+    confirm = messagebox.askyesno(
+        "Confirm Deletion", 
+        f"Are you sure you want to delete product '{product_name}' (ID: {product_id})?\n\n"
+        "This action cannot be undone."
+    )
+    
+    if not confirm:
+        return
+    
+    try:
+        cursor = app.cursor
+        cursor.execute("DELETE FROM Product WHERE ProductID = ?", (product_id,))
+        app.conn.commit()
+        
+        app.product_tree.delete(selected_item[0])
+        
+        messagebox.showinfo("Success", "Product deleted successfully!")
+        
+    except Exception as e:
+        messagebox.showerror("Error", f"Failed to delete product: {e}")
 
 #-------------------------------Order Management--------------------------------------------------------
 

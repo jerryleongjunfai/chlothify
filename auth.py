@@ -3,6 +3,8 @@ import functions
 import main as main
 from tkinter import messagebox
 
+ 
+
 # LOGIN WINDOW (before database GUI can be accessed window pops up)
 def show_login_window():
     login_win = tk.Tk()
@@ -70,6 +72,7 @@ def show_login_window():
     # Set placeholder text
     username_placeholder = "Enter your username"
     username_entry.insert(0, username_placeholder)
+    password_is_placeholder = True
 
     # Password field with placeholder
     password_label = tk.Label(form_inner, text="Password", 
@@ -139,11 +142,13 @@ def show_login_window():
             return
             
         if functions.admin_login(username, password):
-            login_win.destroy() 
-            # LAUNCH DATABASE GUI
-            main_root = tk.Tk()
-            app = main.ClothifyGUI(main_root)
-            main_root.mainloop()
+            for widget in login_win.winfo_children():
+                widget.destroy() #Precaution to eliminate empty tk window pop up bug
+
+            login_win.state('zoomed')  # This maximizes the window to fit the screen
+    
+            login_win.title("Clothify Store Management System")
+            app = main.ClothifyGUI(login_win)
         else:
             messagebox.showerror("Login Failed", "Invalid username or password")
 

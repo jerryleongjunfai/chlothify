@@ -47,66 +47,48 @@ def create_customer_tab(app):  # Changed from self to app
     app.customer_tree.configure(yscrollcommand=customer_scrollbar.set)
     customer_scrollbar.pack(side='right', fill='y')
 
-def create_product_tab(app):  # Changed from self to app
+def create_product_tab(app):  
     """Create product management tab"""
     product_frame = ttk.Frame(app.notebook)
     app.notebook.add(product_frame, text="Products")
-    
-    # Create input fields frame
-    input_frame = tk.Frame(product_frame)
-    input_frame.pack(pady=10, fill='x')
-    
-    app.product_entries = {}  
-    fields = ['ProductID', 'ProductName', 'ProductPrice', 'Category', 'Size', 'StockQty']  
-
-    # Create a grid layout for input fields
-    for i, field in enumerate(fields): 
-        row = i // 3  # 3 fields per row
-        col = (i % 3) * 2  # Each field takes 2 columns (label + entry)
-        
-        lbl = tk.Label(input_frame, text=field + ":", font=('Arial', 10))
-        lbl.grid(row=row, column=col, padx=5, pady=5, sticky='e')
-        
-        entry = tk.Entry(input_frame, font=('Arial', 10))
-        entry.grid(row=row, column=col+1, padx=5, pady=5, sticky='w')
-        
-        app.product_entries[field] = entry  
     
     # Buttons frame
     btn_frame = tk.Frame(product_frame)
     btn_frame.pack(pady=10)
     
+    ### CHANGED / NEW for Product Management → Popup-based like Customers
     tk.Button(btn_frame, text="View All Products", command=lambda: func.view_products(app),
              bg='#4CAF50', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
     tk.Button(btn_frame, text="Add Product", command=lambda: func.add_product(app),
              bg='#2196F3', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-    tk.Button(btn_frame, text="Update Stock", command=lambda: func.update_product(app),
+    tk.Button(btn_frame, text="Search Product", command=lambda: func.search_product(app),
+             bg='#FF9800', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+    tk.Button(btn_frame, text="Update Product", command=lambda: func.update_product(app),
              bg='#FF9800', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
     tk.Button(btn_frame, text="Delete Product", command=lambda: func.delete_product(app),
-          bg='#f44336', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-    tk.Button(btn_frame, text="Search Product", command=lambda: func.search_product(app),
-          bg='#9C27B0', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-    tk.Button(btn_frame, text="Clear Fields", command=lambda: func.clear_product_entries(app),
-         bg='#9E9E9E', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
-    
+             bg='#FF9800', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+
     # Treeview for displaying products
-    app.product_tree = ttk.Treeview(product_frame, columns=('ProductID', 'ProductName', 'ProductPrice', 'Category', 'Size', 'StockQty'), show='headings')
-    app.product_tree.heading('ProductID', text='Product ID')
-    app.product_tree.heading('ProductName', text='Product Name')
-    app.product_tree.heading('ProductPrice', text='Price ($)')
-    app.product_tree.heading('Category', text='Category')
+    app.product_tree = ttk.Treeview(product_frame, columns=('ID', 'Name', 'Price', 'Category', 'Size', 'StockQty'), show='headings')
+    app.product_tree.heading('ID', text='Product ID')
+    app.product_tree.heading('Name', text='Name')
+    app.product_tree.heading('Price', text='Price')
+    app.product_tree.heading('Category', text='Category')      
     app.product_tree.heading('Size', text='Size')
-    app.product_tree.heading('StockQty', text='Stock Qty')
+    app.product_tree.heading('StockQty', text='StockQty')
     
-    # Set column widths
-    app.product_tree.column('ProductID', width=100)
-    app.product_tree.column('ProductName', width=150)
-    app.product_tree.column('ProductPrice', width=80)
-    app.product_tree.column('Category', width=100)
+    app.product_tree.column('ID', width=80)
+    app.product_tree.column('Name', width=150)
+    app.product_tree.column('Category', width=120)
+    app.product_tree.column('Price', width=100)
     app.product_tree.column('Size', width=80)
-    app.product_tree.column('StockQty', width=80)
+    app.product_tree.column('StockQty', width=100)
     
     app.product_tree.pack(fill='both', expand=True, padx=10, pady=10)
+    
+    product_scrollbar = ttk.Scrollbar(product_frame, orient='vertical', command=app.product_tree.yview)
+    app.product_tree.configure(yscrollcommand=product_scrollbar.set)
+    product_scrollbar.pack(side='right', fill='y')
 
 def create_order_tab(app):  # Changed from self to app
     """Create order management tab"""
