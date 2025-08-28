@@ -50,7 +50,7 @@ class ClothifyGUI:
                         Email TEXT NOT NULL,
                         Phone TEXT NOT NULL,
                         Address TEXT NOT NULL
-                    )
+                    );
                 ''')
             
             # Products table (only if not exists)
@@ -64,7 +64,7 @@ class ClothifyGUI:
                         Category TEXT NOT NULL,
                         Size TEXT NOT NULL,
                         StockQty INTEGER NOT NULL
-                    )
+                    );
                 ''')
             
             # Orders table (only if not exists)  
@@ -77,7 +77,7 @@ class ClothifyGUI:
                         TotalAmount REAL NOT NULL,
                         Status TEXT NOT NULL DEFAULT 'Pending',
                         FOREIGN KEY (CustomerID) REFERENCES Customer (CustomerID)
-                    )
+                    );
                 ''')
             
             # OrderItems table (only if not exists)
@@ -91,7 +91,7 @@ class ClothifyGUI:
                         UnitPrice REAL NOT NULL,
                         FOREIGN KEY (OrderID) REFERENCES OrderTable (OrderID),
                         FOREIGN KEY (ProductID) REFERENCES Product (ProductID)
-                    )
+                    );
                 ''')
             
             # Payments table (only if not exists)
@@ -105,7 +105,7 @@ class ClothifyGUI:
                         PaymentMethod TEXT NOT NULL,
                         Status TEXT NOT NULL DEFAULT 'Pending',
                         FOREIGN KEY (OrderID) REFERENCES OrderTable (OrderID)
-                    )
+                    );
                 ''')
             
             self.conn.commit()
@@ -148,6 +148,7 @@ class ClothifyGUI:
         tabs.create_order_tab(self)
         tabs.create_payment_tab(self)
         tabs.create_sql_tab(self)
+        tabs.create_report_tab(self)
 
     def logout(self):
         functions.logout_user()

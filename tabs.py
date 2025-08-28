@@ -180,3 +180,19 @@ def create_sql_tab(app):
         app.result_tree = ttk.Treeview(sql_frame, show='headings')
         app.result_tree.pack(fill='both', expand=True, padx=10, pady=5)
 
+def create_report_tab(app):
+        """Create Report tab"""
+        report_frame = ttk.Frame(app.notebook)
+        app.notebook.add(report_frame, text="Generate Report")
+        
+        # Buttons
+        btn_frame = tk.Frame(report_frame)
+        btn_frame.pack(pady=10)
+
+        tk.Button(btn_frame, text="Generate Sales Report", command=lambda: func.generate_sales_report(app),
+                 bg='#36b1f4', fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+        tk.Button(btn_frame, text="Generate Customer Report", command=lambda: func.generate_customer_report(app),
+                 bg="#36b1f4", fg='black', font=('Arial', 10, 'bold')).pack(side='left', padx=5)
+
+        app.result_tree = ttk.Treeview(report_frame, show='headings')
+        app.result_tree.pack(fill='both', expand=True, padx=10, pady=5)

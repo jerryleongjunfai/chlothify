@@ -977,138 +977,81 @@ def filter_products_by_category(self, category):
     self.cursor.execute("SELECT * FROM Product WHERE Category = ?", (category,))
     return self.cursor.fetchall()
 
-def generate_sales_report(self, start_date=None, end_date=None):
-    """Generate a sales report with optional date range filtering"""
+def generate_sales_report(app):
+    """Generate a sales report and display it in result_tree"""
+    query = """
+        SELECT 
+            o.OrderID,
+            c.CustomerName || ' - ' || o.OrderID AS Customer_Order, 
+            o.OrderDate,
+            o.TotalAmount,
+            o.Status,
+            COUNT(oi.OrderItemID) AS ItemsCount
+        FROM 
+            OrderTable o
+        JOIN 
+            Customer c ON o.CustomerID = c.CustomerID
+        LEFT JOIN 
+            OrderItems oi ON o.OrderID = oi.OrderID
+        GROUP BY o.OrderID
+        ORDER BY o.OrderDate DESC
+    """
     try:
-        # select concatenate
-        query = """
-            SELECT 
-                o.OrderID,
-                c.CustomerName || ' - ' || o.OrderID AS Customer_Order, 
-                o.OrderDate,
-                o.TotalAmount,
-                o.Status,
-                COUNT(oi.OrderItemID) AS ItemsCount
-            FROM 
-                OrderTable o
-            JOIN 
-                Customer c ON o.CustomerID = c.CustomerID
-            LEFT JOIN 
-                OrderItems oi ON o.OrderID = oi.OrderID
-        """
-        
-        params = []
-        if start_date and end_date:
-            query += " WHERE o.OrderDate BETWEEN ? AND ?"
-            params.extend([start_date, end_date])
-        elif start_date:
-            query += " WHERE o.OrderDate >= ?"
-            params.append(start_date)
-        elif end_date:
-            query += " WHERE o.OrderDate <= ?"
-            params.append(end_date)
-            
-        query += " GROUP BY o.OrderID ORDER BY o.OrderDate DESC"
-        
-        self.cursor.execute(query, params)
-        return self.cursor.fetchall()
-        
+        app.cursor.execute(query)
+        results = app.cursor.fetchall()
+        for item in app.result_tree.get_children():
+            app.result_tree.delete(item)
+        if results:
+            columns = [description[0] for description in app.cursor.description]
+            app.result_tree['columns'] = columns
+            app.result_tree['show'] = 'headings'
+            for col in columns:
+                app.result_tree.heading(col, text=col)
+                app.result_tree.column(col, width=120)
+            for row in results:
+                app.result_tree.insert('', 'end', values=row)
+            messagebox.showinfo("Success", f"Sales report generated! {len(results)} rows returned.")
+        else:
+            messagebox.showinfo("Info", "No sales records found.")
     except Exception as e:
         messagebox.showerror("Error", f"Failed to generate sales report: {e}")
-        return []
 
-def generate_customer_report(self):
-    """Generate a report of customer purchasing activity"""
+def generate_customer_report(app):
+    """Generate a customer report and display it in result_tree"""
+    query = """
+        SELECT 
+            c.CustomerID,
+            c.CustomerName,
+            c.Email,
+            c.Phone,
+            COUNT(o.OrderID) AS TotalOrders,
+            SUM(o.TotalAmount) AS TotalSpent,
+            MAX(o.OrderDate) AS LastOrderDate
+        FROM 
+            Customer c
+        LEFT JOIN 
+            OrderTable o ON c.CustomerID = o.CustomerID
+        GROUP BY 
+            c.CustomerID
+        ORDER BY 
+            TotalSpent DESC
+    """
     try:
-        self.cursor.execute("""
-            SELECT 
-                c.CustomerID,
-                c.Name,
-                c.Email,
-                c.Phone,
-                COUNT(o.OrderID) AS TotalOrders,
-                SUM(o.TotalAmount) AS TotalSpent,
-                MAX(o.OrderDate) AS LastOrderDate
-            FROM 
-                Customer c
-            LEFT JOIN 
-                OrderTable o ON c.CustomerID = o.CustomerID
-            GROUP BY 
-                c.CustomerID
-            ORDER BY 
-                TotalSpent DESC
-        """)
-        return self.cursor.fetchall()
+        app.cursor.execute(query)
+        results = app.cursor.fetchall()
+        for item in app.result_tree.get_children():
+            app.result_tree.delete(item)
+        if results:
+            columns = [description[0] for description in app.cursor.description]
+            app.result_tree['columns'] = columns
+            app.result_tree['show'] = 'headings'
+            for col in columns:
+                app.result_tree.heading(col, text=col)
+                app.result_tree.column(col, width=120)
+            for row in results:
+                app.result_tree.insert('', 'end', values=row)
+            messagebox.showinfo("Success", f"Customer report generated! {len(results)} rows returned.")
+        else:
+            messagebox.showinfo("Info", "No customer records found.")
     except Exception as e:
         messagebox.showerror("Error", f"Failed to generate customer report: {e}")
-        return []
-
-def top_selling_products(self, limit=10, days=None):
-    """Get top selling products with optional time period filtering"""
-    try:
-        query = """
-            SELECT 
-                p.ProductID,
-                p.ProductName,
-                p.Category,
-                SUM(oi.Quantity) AS TotalSold,
-                SUM(oi.Quantity * oi.UnitPrice) AS TotalRevenue
-            FROM 
-                OrderItems oi
-            JOIN 
-                Product p ON oi.ProductID = p.ProductID
-            JOIN 
-                OrderTable o ON oi.OrderID = o.OrderID
-        """
-        
-        params = []
-        if days:
-            query += " WHERE o.OrderDate >= date('now', ?)"
-            params.append(f"-{days} days")
-            
-        query += """
-            GROUP BY 
-                p.ProductID
-            ORDER BY 
-                TotalSold DESC
-            LIMIT ?
-        """
-        params.append(limit)
-        
-        self.cursor.execute(query, params)
-        return self.cursor.fetchall()
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to get top selling products: {e}")
-        return []
-
-def monthly_revenue_chart(self, months=12):
-    """Generate monthly revenue data for charting"""
-    try:
-        self.cursor.execute("""
-            SELECT 
-                strftime('%Y-%m', OrderDate) AS Month,
-                SUM(TotalAmount) AS Revenue
-            FROM 
-                OrderTable
-            WHERE 
-                OrderDate >= date('now', 'start of month', ?)
-                AND Status = 'Completed'
-            GROUP BY 
-                strftime('%Y-%m', OrderDate)
-            ORDER BY 
-                Month
-        """, (f"-{months-1} months",))
-        
-        results = self.cursor.fetchall()
-        
-        # Format results for charting
-        months = []
-        revenues = []
-        for row in results:
-            months.append(row[0])
-            revenues.append(row[1])
-            
-        return months, revenues
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to generate revenue chart data: {e}")
-        return [], []
