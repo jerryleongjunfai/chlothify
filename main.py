@@ -5,7 +5,6 @@ import tabs as tabs
 import functions  # from functions.py
 import auth as auth
 
-
 class ClothifyGUI:
     def __init__(self, root):
         self.root = root
