@@ -980,13 +980,14 @@ def filter_products_by_category(self, category):
 def generate_sales_report(self, start_date=None, end_date=None):
     """Generate a sales report with optional date range filtering"""
     try:
+        # select concatenate
         query = """
             SELECT 
                 o.OrderID,
+                c.CustomerName || ' - ' || o.OrderID AS Customer_Order, 
                 o.OrderDate,
                 o.TotalAmount,
                 o.Status,
-                c.Name AS CustomerName,
                 COUNT(oi.OrderItemID) AS ItemsCount
             FROM 
                 OrderTable o
