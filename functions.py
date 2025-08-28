@@ -485,7 +485,7 @@ def update_product(app):
                 UPDATE Product 
                 SET ProductName = ?, ProductPrice = ?, Category = ?, Size = ?, StockQty = ? 
                 WHERE ProductID = ?
-            """, (product_id, new_name, new_price, new_category, new_size, new_stock))
+            """, (new_name, new_price, new_category, new_size, new_stock, product_id))
             
             app.conn.commit()  
             
@@ -911,25 +911,6 @@ def view_payments(app):
     except Exception as e:
         messagebox.showerror("Error", f"Failed to fetch payments: {str(e)}")
 
-
-#-------------------------------Stock Management--------------------------------------------------------
-def adjust_stock(self, product_id, quantity_change):
-    try:
-        self.cursor.execute("UPDATE Product SET StockQuantity = StockQuantity + ? WHERE ProductID = ?", 
-                            (quantity_change, product_id))
-        self.conn.commit()
-        messagebox.showinfo("Success", "Stock adjusted.")
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to adjust stock: {e}")
-
-def check_stock_level(self, product_id):
-    self.cursor.execute("SELECT StockQuantity FROM Product WHERE ProductID = ?", (product_id,))
-    result = self.cursor.fetchone()
-    return result[0] if result else None
-
-def get_low_stock_items(self, threshold=5):
-    self.cursor.execute("SELECT * FROM Product WHERE StockQuantity <= ?", (threshold,))
-    return self.cursor.fetchall()
 
 #------------------------------------Custom SQL Queries-------------------------------------------------
 
