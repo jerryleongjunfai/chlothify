@@ -48,7 +48,7 @@ class ClothifyGUI:
                         CustomerID TEXT PRIMARY KEY,
                         CustomerName TEXT NOT NULL,
                         Email TEXT NOT NULL,
-                        Phone TEXT NOT NULL,
+                        Phone TEXT NOT NULL CHECK(Phone GLOB '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
                         Address TEXT NOT NULL
                     );
                 ''')
@@ -64,7 +64,7 @@ class ClothifyGUI:
                         Category TEXT NOT NULL,
                         Size TEXT NOT NULL,
                         StockQty INTEGER NOT NULL
-                    );
+                    )
                 ''')
             
             # Orders table (only if not exists)  
