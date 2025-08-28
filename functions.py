@@ -1043,44 +1043,6 @@ def generate_customer_report(self):
         messagebox.showerror("Error", f"Failed to generate customer report: {e}")
         return []
 
-def top_selling_products(self, limit=10, days=None):
-    """Get top selling products with optional time period filtering"""
-    try:
-        query = """
-            SELECT 
-                p.ProductID,
-                p.ProductName,
-                p.Category,
-                SUM(oi.Quantity) AS TotalSold,
-                SUM(oi.Quantity * oi.UnitPrice) AS TotalRevenue
-            FROM 
-                OrderItems oi
-            JOIN 
-                Product p ON oi.ProductID = p.ProductID
-            JOIN 
-                OrderTable o ON oi.OrderID = o.OrderID
-        """
-        
-        params = []
-        if days:
-            query += " WHERE o.OrderDate >= date('now', ?)"
-            params.append(f"-{days} days")
-            
-        query += """
-            GROUP BY 
-                p.ProductID
-            ORDER BY 
-                TotalSold DESC
-            LIMIT ?
-        """
-        params.append(limit)
-        
-        self.cursor.execute(query, params)
-        return self.cursor.fetchall()
-    except Exception as e:
-        messagebox.showerror("Error", f"Failed to get top selling products: {e}")
-        return []
-
 def monthly_revenue_chart(self, months=12):
     """Generate monthly revenue data for charting"""
     try:
