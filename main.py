@@ -48,7 +48,7 @@ class ClothifyGUI:
                         CustomerID TEXT PRIMARY KEY,
                         CustomerName TEXT NOT NULL,
                         Email TEXT NOT NULL,
-                        Phone TEXT NOT NULL,
+                        Phone TEXT NOT NULL CHECK(Phone GLOB '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'),
                         Address TEXT NOT NULL
                     )
                 ''')
@@ -62,8 +62,8 @@ class ClothifyGUI:
                         ProductName TEXT NOT NULL,
                         ProductPrice REAL NOT NULL,
                         Category TEXT NOT NULL,
-                        Size TEXT NOT NULL,
-                        StockQty INTEGER NOT NULL
+                        Size TEXT NOT NULL CHECK(Size GLOB '[A-Za-z]*'),
+                        StockQty INTEGER NOT NULL  
                     )
                 ''')
             

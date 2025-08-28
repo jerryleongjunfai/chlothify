@@ -45,7 +45,12 @@ def add_customer(app):
                 if not all([customer_id, name, email, phone, address]):
                     messagebox.showerror("Error", "All fields are required!")
                     return
-                
+            
+                # Phone validation: must be exactly 9 digits
+                if not phone.isdigit() or len(phone) != 9:
+                    messagebox.showerror("Error", "Phone number must contain exactly 9 digits!")
+                    return
+            
                 app.cursor.execute("""
                     INSERT INTO Customer (CustomerID, CustomerName, Email, Phone, Address)
                     VALUES (?, ?, ?, ?, ?)
@@ -195,6 +200,9 @@ def update_customer(app):
         if not new_name or not new_email:
             messagebox.showerror("Error", "Name and Email are required fields.")
             return
+        if not new_phone.isdigit() or len(new_phone) != 9:
+            messagebox.showerror("Error", "Phone number must contain exactly 9 digits!")
+            return
         
         try:
             # Update customer in database (assuming you have a database connection object)
@@ -274,13 +282,17 @@ def add_product(app):
         try:
             product_id = id_entry.get()
             name = name_entry.get()
-            category = category_entry.get()
             price = price_entry.get()
+            category = category_entry.get()
             size = size_entry.get()
             stock = stock_entry.get()
             
             if not all([product_id, name, price, category, size, stock]):
                 messagebox.showerror("Error", "All fields are required!")
+                return
+            
+            if not new_size.isalpha():
+                messagebox.showerror("Error", "Size must only contain letters (e.g., S, M, L, XL).")
                 return
 
             try:
@@ -446,13 +458,17 @@ def update_product(app):
     def save_updates():
         """Save the updated product information"""
         new_name = name_var.get().strip()
-        new_category = category_var.get().strip()
         new_price = price_var.get().strip()
+        new_category = category_var.get().strip()
         new_size = size_var.get().strip()
         new_stock = stock_var.get().strip()
         
         if not new_name or not new_category or not new_price or not new_stock:
             messagebox.showerror("Error", "All fields are required.")
+            return
+        
+        if not new_size.isalpha():
+            messagebox.showerror("Error", "Size must only contain letters (e.g., S, M, L, XL).")
             return
         
         try:
@@ -467,9 +483,9 @@ def update_product(app):
             
             cursor.execute("""
                 UPDATE Product 
-                SET ProductName = ?, Category = ?, ProductPrice = ?, Size = ?, StockQty = ? 
+                SET ProductName = ?, ProductPrice = ?, Category = ?, Size = ?, StockQty = ? 
                 WHERE ProductID = ?
-            """, (new_name, new_price, new_category, new_stock, new_size, product_id))
+            """, (product_id, new_name, new_price, new_category, new_size, new_stock))
             
             app.conn.commit()  
             
