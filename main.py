@@ -5,6 +5,9 @@ import tabs as tabs
 import functions  # from functions.py
 import auth as auth
 
+# Connect to existing database
+conn = sqlite3.connect("store.db")
+cursor = conn.cursor()
 
 class ClothifyGUI:
     def __init__(self, root):
