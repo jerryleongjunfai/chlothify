@@ -291,7 +291,7 @@ def add_product(app):
                 messagebox.showerror("Error", "All fields are required!")
                 return
             
-            if not new_size.isalpha():
+            if not size.isalpha():
                 messagebox.showerror("Error", "Size must only contain letters (e.g., S, M, L, XL).")
                 return
 
